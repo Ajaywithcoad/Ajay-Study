@@ -1,0 +1,284 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Ajay Academy Pro</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body oncontextmenu="return false;">
+
+    <!-- TOAST NOTIFICATION -->
+    <div id="toast" class="toast hidden">Message</div>
+
+    <!-- AUTHENTICATION SCREEN -->
+    <div id="auth-screen" class="auth-bg">
+        <div class="glass-card zoom-in">
+            <div class="logo"><i class="fas fa-graduation-cap"></i></div>
+            <h2>Ajay Academy</h2>
+            <p>Revolutionizing Education</p>
+            <div id="login-form">
+                <input type="text" id="l-user" placeholder="Username" class="inp-box">
+                <input type="password" id="l-pass" placeholder="Password" class="inp-box">
+                <button onclick="login()" class="btn-grad">Login</button>
+                <p class="switch-txt" onclick="toggleAuth('reg')">Create Account</p>
+            </div>
+            <div id="reg-form" class="hidden">
+                <input type="text" id="r-user" placeholder="New Username" class="inp-box">
+                <input type="password" id="r-pass" placeholder="New Password" class="inp-box">
+                <button onclick="register()" class="btn-grad">Register</button>
+                <p class="switch-txt" onclick="toggleAuth('login')">Back to Login</p>
+            </div>
+        </div>
+    </div>
+
+    <!-- MAIN DASHBOARD -->
+    <div id="dashboard" class="hidden">
+        <header>
+            <div class="brand">Ajay Academy <span class="badge">LIVE</span></div>
+            <div class="head-actions"><button onclick="openSearch()" class="btn-head-search" title="Search"><i class="fas fa-search"></i></button><button onclick="logout()" class="btn-logout"><i class="fas fa-power-off"></i></button></div>
+        </header>
+
+        <!-- ADMIN PANEL -->
+        <div id="admin-panel" class="hidden">
+            <div class="admin-area">
+                <h3><i class="fas fa-sliders-h"></i> Control Center</h3>
+                
+                <div class="up-grid">
+                    <select id="u-cat" onchange="loadAdminSubjects()"><option value="">Select Exam...</option><option>SSC</option><option>NEET</option><option>JEE</option><option>GATE</option><option>UPSC</option><option>Computer Science</option></select>
+                    <select id="u-sub"><option value="">Subject...</option></select>
+                    <select id="u-lang"><option value="English">English</option><option value="Hindi">Hindi</option></select>
+                    
+                    <select id="u-sec" onchange="toggleAdminInputs()">
+                        <option value="Lecture">🎥 Lecture (Video + Notes + DPP)</option>
+                        <option value="Notes">📄 Only Notes (PDF)</option>
+                        <option value="Mock">⏱️ Mock Test (Exam)</option>
+                        <option value="PYQ">📚 PYQ (Practice)</option>
+                        <option value="OneShot">🔥 OneShot Video</option>
+                    </select>
+                    
+                    <input type="text" id="u-chap" placeholder="Chapter / Batch Name / Playlist Name">
+                </div>
+
+                <!-- QUIZ INPUTS -->
+                <div id="quiz-inputs" class="hidden admin-section-box">
+                    <h4 style="margin-bottom:10px;"><i class="fas fa-edit"></i> Manual Question Entry</h4>
+                    <textarea id="q-text" class="inp-box" placeholder="Question Text..."></textarea>
+                    <div class="grid-2"><input id="opt-a" placeholder="Option A" class="inp-box"><input id="opt-b" placeholder="Option B" class="inp-box"><input id="opt-c" placeholder="Option C" class="inp-box"><input id="opt-d" placeholder="Option D" class="inp-box"></div>
+                    <select id="q-ans" class="inp-box"><option value="a">Answer: A</option><option value="b">Answer: B</option><option value="c">Answer: C</option><option value="d">Answer: D</option></select>
+                    <textarea id="q-expl" class="inp-box" placeholder="Detailed Solution..."></textarea>
+                    <button onclick="uploadContent()" class="btn-upload">Save Question</button>
+                </div>
+
+                <!-- VIDEO/NOTES INPUTS -->
+                <div id="video-inputs" class="admin-section-box">
+                    <h4 style="margin-bottom:10px;"><i class="fas fa-video"></i> Manual Video/Notes Upload</h4>
+                    <input type="text" id="u-title" placeholder="Title (e.g. Lecture 1 / Notes Name)" class="inp-box">
+                    <div class="grid-2">
+                        <input type="text" id="u-link" placeholder="Video / PDF Direct Link" class="inp-box">
+                        <input type="text" id="u-notes" placeholder="Additional Notes PDF Link" class="inp-box">
+                    </div>
+                    <input type="text" id="u-dpp" placeholder="DPP / Practice Sheet Link" class="inp-box">
+                    <button onclick="uploadContent()" class="btn-upload">Upload Content</button>
+                </div>
+
+                <!-- ADVANCED TOOLS (JSON & YT) -->
+                <div class="grid-2" style="margin-top:15px; gap:15px;">
+                    <!-- BULK JSON -->
+                    <div class="bulk-box">
+                        <p><i class="fas fa-code"></i> Bulk JSON Upload</p>
+                        <code id="json-format-hint">[{"title":"Lec 1", "link":"url"}]</code>
+                        <textarea id="bulk-text" class="inp-box" style="height:80px; margin-top:10px;" placeholder="Paste JSON array here..."></textarea>
+                        <button onclick="uploadBulk()" class="btn-magic">🚀 Upload Bulk JSON</button>
+                    </div>
+
+                    <!-- YOUTUBE AUTO FETCHER -->
+                    <div class="bulk-box" style="border-color:#ef4444; background:#fef2f2;">
+                        <p style="color:#ef4444;"><i class="fab fa-youtube"></i> Auto Playlist Fetcher</p>
+                        <input type="text" id="yt-playlist-url" placeholder="YouTube Playlist URL" class="inp-box" style="margin-top:10px;">
+                        <input type="text" id="yt-api-key" placeholder="YouTube API Key" class="inp-box" style="margin-bottom:5px;">
+                        <button onclick="fetchAndUploadPlaylist()" class="btn-magic" style="background:linear-gradient(45deg, #ef4444, #b91c1c);">🔴 Fetch & Upload Playlist</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- APP VIEWS -->
+        <div class="container">
+            <div id="cat-view">
+                <div class="big-search" onclick="openSearch()">
+                    <i class="fas fa-search"></i>
+                    <span class="bs-text">Search everything... SSC, Mock Test, Lectures, Notes</span>
+                    <button type="button" class="bs-btn">Search</button>
+                </div>
+                <h2 class="sec-title">Select Goal</h2> <div class="grid" id="cat-grid"></div> </div>
+            
+            <div id="sub-view" class="hidden"> 
+                <button onclick="goBack()" class="btn-back"><i class="fas fa-arrow-left"></i> Back</button> 
+                <h2 class="sec-title">Subjects</h2> 
+                <div id="sub-grid" class="grid"></div> 
+            </div>
+            
+            <div id="section-view" class="hidden">
+                <button onclick="goBack()" class="btn-back"><i class="fas fa-arrow-left"></i> Back</button> <h2 class="sec-title">Content Type</h2>
+                <div class="grid">
+                    <div class="card c-lec" onclick="selectMedium('Lecture')"><i class="fas fa-chalkboard-teacher"></i><h3>Lectures</h3><p>Video + Notes + DPP</p></div>
+                    <div class="card c-mock" onclick="selectMedium('Mock')"><i class="fas fa-clock"></i><h3>Mock Test</h3><p>NTA Pattern</p></div>
+                    <div class="card c-pyq" onclick="selectMedium('PYQ')"><i class="fas fa-book-open"></i><h3>PYQ Bank</h3><p>Practice</p></div>
+                    <div class="card c-note" onclick="selectMedium('Notes')"><i class="fas fa-file-pdf"></i><h3>Notes Only</h3><p>PDF Library</p></div>
+                    <div class="card c-one" onclick="selectMedium('OneShot')"><i class="fas fa-fire"></i><h3>OneShot</h3><p>Marathon</p></div>
+                </div>
+            </div>
+            
+            <div id="medium-view" class="hidden">
+                <button onclick="goBack()" class="btn-back"><i class="fas fa-arrow-left"></i> Back</button> 
+                <h2 class="sec-title">Language</h2>
+                <div class="grid"><div class="card c-hindi" onclick="openFinalList('Hindi')"><h3>Hindi Medium</h3></div><div class="card c-eng" onclick="openFinalList('English')"><h3>English Medium</h3></div></div>
+            </div>
+            
+            <div id="list-view" class="hidden"> 
+                <button onclick="goBack()" class="btn-back"><i class="fas fa-arrow-left"></i> Back</button> 
+                <h2 id="list-head" class="sec-title">Playlist</h2> 
+                <div id="pl-grid" class="list-layout"></div> 
+            </div>
+        </div>
+
+        <!-- SEARCH VIEW -->
+        <div id="search-view" class="hidden">
+            <div class="search-top">
+                <button onclick="closeSearch()" class="btn-back" style="margin:0;"><i class="fas fa-arrow-left"></i> Back</button>
+                <div class="search-box">
+                    <i class="fas fa-search"></i>
+                    <input type="text" id="search-input" placeholder="Search: ssc mock test, physics lecture, neet attendance..." autocomplete="off" oninput="runSearch()" onkeydown="if(event.key==='Enter')runSearch()">
+                    <button type="button" class="search-clear hidden" id="search-clear" onclick="clearSearch()"><i class="fas fa-times"></i></button>
+                </div>
+                <button type="button" class="search-go" onclick="runSearch()"><i class="fas fa-search"></i> Search</button>
+            </div>
+            <div class="search-chips" id="search-chips"></div>
+            <div id="search-status" class="search-status"></div>
+            <div id="search-results" class="search-results"></div>
+        </div>
+
+        <!-- EXTERNAL TOOL VIEW (NEET ATTENDANCE) -->
+        <div id="tool-view" class="hidden">
+            <div class="tool-top">
+                <button onclick="closeTool()" class="btn-back" style="margin:0;"><i class="fas fa-arrow-left"></i> Back</button>
+                <b id="tool-title">NEET Attendance</b>
+                <a id="tool-newtab" href="NEET_ATTENDENCE.html" target="_blank" class="tool-open"><i class="fas fa-up-right-from-square"></i></a>
+            </div>
+            <iframe id="tool-frame" title="NEET Attendance" allow="fullscreen; clipboard-write"></iframe>
+        </div>
+
+        <!-- EXAM TIME SETUP -->
+        <div id="setup-view" class="hidden">
+            <div class="setup-card zoom-in">
+                <h2>Duration</h2>
+                <div class="time-grid">
+                    <button onclick="startExamWithTime(15)" class="btn-time">15 Min</button>
+                    <button onclick="startExamWithTime(45)" class="btn-time">45 Min</button>
+                    <button onclick="startExamWithTime(60)" class="btn-time">1 Hour</button>
+                    <button onclick="startExamWithTime(180)" class="btn-time">3 Hours</button>
+                </div>
+                <button onclick="closeSetup()" class="btn-back" style="width:100%; margin-top:15px; justify-content:center;">Cancel</button>
+            </div>
+        </div>
+
+        <!-- QUIZ UI (NTA FORMAT) -->
+        <div id="quiz-view" class="hidden">
+            <div class="exam-layout">
+                <div class="exam-header">
+                    <div class="timer-box" id="timer-area"><i class="far fa-clock"></i> <span id="quiz-timer">00:00:00</span></div>
+                    <div class="h-actions">
+                        <button onclick="submitExam()" id="btn-submit" class="btn-submit-exam">SUBMIT</button>
+                        <button onclick="closeQuiz()" id="btn-exit" class="btn-logout hidden">EXIT</button>
+                    </div>
+                </div>
+                <div class="exam-body">
+                    <div class="question-panel">
+                        <div class="q-header"><span class="q-no">Q.<span id="current-q-num">1</span></span><span class="marks">+4 | -1</span></div>
+                        <div class="q-text" id="q-display">Loading...</div>
+                        <div class="options-list">
+                            <div class="opt-row" onclick="handleOptionClick('a')" id="opt-row-a"><span class="circle">A</span> <span class="opt-txt" id="txt-a"></span></div>
+                            <div class="opt-row" onclick="handleOptionClick('b')" id="opt-row-b"><span class="circle">B</span> <span class="opt-txt" id="txt-b"></span></div>
+                            <div class="opt-row" onclick="handleOptionClick('c')" id="opt-row-c"><span class="circle">C</span> <span class="opt-txt" id="txt-c"></span></div>
+                            <div class="opt-row" onclick="handleOptionClick('d')" id="opt-row-d"><span class="circle">D</span> <span class="opt-txt" id="txt-d"></span></div>
+                        </div>
+                        <div id="practice-expl" class="hidden" style="margin-top:20px; padding:15px; background:#ecfdf5; border-left:5px solid #10b981;">
+                            <h4 style="color:#15803d;">Correct: <span id="ans-label"></span></h4>
+                            <p id="p-expl-text" style="color:#333; margin-top:5px;"></p>
+                        </div>
+                    </div>
+                    <div class="palette-panel" id="pal-area"><div class="palette-grid" id="palette-grid"></div></div>
+                </div>
+                <div class="exam-footer">
+                    <div class="f-left"><button onclick="markReview()" class="btn-review">Review</button><button onclick="clearResponse()" class="btn-clear">Clear</button></div>
+                    <button onclick="saveAndNext()" class="btn-save">Next</button>
+                </div>
+            </div>
+        </div>
+
+        <!-- EXAM RESULT -->
+        <div id="result-view" class="hidden">
+            <div class="res-card">
+                <h2>Score Card</h2>
+                <div class="score-circle-cont"><span id="res-score">0</span><small>Marks</small></div>
+                <div class="res-grid"><div class="r-box c-green"><h3>Correct</h3><span id="res-correct">0</span></div><div class="r-box c-red"><h3>Wrong</h3><span id="res-wrong">0</span></div><div class="r-box c-gray"><h3>Skipped</h3><span id="res-skip">0</span></div></div>
+                <button onclick="closeQuiz()" class="btn-main" style="width:100%; padding:15px; background:var(--primary); color:white; border-radius:12px; font-weight:bold; border:none; cursor:pointer;">Return Home</button>
+                <div id="solution-list" style="text-align:left; margin-top:20px;"></div>
+            </div>
+        </div>
+
+        <!-- UNIVERSAL PLAYER (VIDEO & PDF) -->
+        <div id="player-view" class="hidden">
+            <div class="player-layout">
+                <div class="video-section">
+                    <div class="vid-container">
+                        <div class="vid-wrapper" id="player-wrapper">
+                            <div id="video-frame"></div>
+                        </div>
+                    </div>
+                    <div class="vid-info">
+                        <h2 id="v-title">Title Loading...</h2>
+                        
+                        <div class="resource-bar">
+                            <button id="btn-notes" class="res-btn" onclick="openResource('notes')">
+                                <i class="fas fa-file-pdf"></i> Class Notes
+                            </button>
+                            <button id="btn-dpp" class="res-btn" onclick="openResource('dpp')">
+                                <i class="fas fa-pen-alt"></i> DPP / Sheet
+                            </button>
+                            <button id="btn-next-vid" class="res-btn next-lec" onclick="playNextVideo()">
+                                Next Class <i class="fas fa-step-forward"></i>
+                            </button>
+                        </div>
+
+                        <button onclick="closePlayer()" class="btn-close-vid"><i class="fas fa-times"></i> Close Viewer</button>
+                    </div>
+                </div>
+                <div class="playlist-section">
+                    <div class="pl-header">Course Content</div>
+                    <div id="playlist-list"></div>
+                </div>
+            </div>
+        </div>
+
+    </div>
+    
+    <!-- FIREBASE -->
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-app-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/9.23.0/firebase-firestore-compat.js"></script>
+    <script src="script.js"></script>
+    <script>
+  if ('serviceWorker' in navigator) {
+    window.addEventListener('load', () => {
+      navigator.serviceWorker.register('/sw.js')
+        .then(reg => console.log('Service Worker Registered!', reg))
+        .catch(err => console.log('Service Worker Failed!', err));
+    });
+  }
+</script>
+</body>
+</html>

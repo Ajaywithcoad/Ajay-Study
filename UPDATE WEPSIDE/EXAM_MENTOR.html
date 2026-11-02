@@ -1,0 +1,660 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>AI Mentor</title>
+<link rel="manifest" href="./manifest.json"><meta name="theme-color" content="#06111f">
+<style>
+:root{--bg:#06111f;--card:#0d1b2b;--line:#223c57;--text:#edf6ff;--muted:#8fa8c1;--blue:#53c8ff;--green:#58dfa0;--red:#ff6378;--yellow:#ffd166;--purple:#b79cff}
+*{box-sizing:border-box}body{margin:0;background:radial-gradient(circle at 20% 0,#12324b,#06111f 55%);color:var(--text);font-family:Segoe UI,Arial,sans-serif}
+.app{max-width:1450px;margin:auto;padding:18px}.top{display:flex;justify-content:space-between;align-items:center;gap:15px;flex-wrap:wrap}.brand h1{margin:0;font-size:30px}.brand p{margin:5px 0;color:var(--muted)}.clock{text-align:right;font-size:29px;font-weight:800}.date{font-size:12px;color:var(--muted);font-weight:400}
+nav{display:flex;gap:7px;flex-wrap:wrap;margin:15px 0}nav button{background:#142b42;color:#dff4ff}
+.grid{display:grid;grid-template-columns:1.15fr .85fr;gap:15px}.card{background:#0d1b2bf2;border:1px solid var(--line);border-radius:18px;padding:17px;box-shadow:0 12px 35px #0005}.wide{grid-column:1/-1}
+.badge{display:inline-block;background:#173650;color:#aee2ff;border-radius:20px;padding:6px 10px;font-size:12px;font-weight:800}
+.slot{font-size:17px;color:#9fdfff;margin-top:9px}.task{font-size:30px;font-weight:850;margin:4px 0}.topic{color:#c5d5e5;margin:6px 0 12px}
+.circle{width:270px;height:270px;margin:8px auto;position:relative}.circle svg{width:100%;height:100%;transform:rotate(-90deg)}circle{fill:none;stroke-width:12}.track{stroke:#1a2c42}.fill{stroke:var(--blue);stroke-linecap:round}
+.time{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;flex-direction:column}.time b{font-size:36px}.time span{color:var(--muted);font-size:12px}
+button{border:0;border-radius:10px;padding:10px 13px;margin:3px;background:var(--blue);font-weight:800;cursor:pointer}button.alt{background:#20364f;color:white}button.green{background:var(--green);color:#062116}button.red{background:var(--red);color:#2a0610}button.yellow{background:var(--yellow);color:#211a00}
+input,select,textarea{width:100%;background:#081522;color:white;border:1px solid #2b4966;border-radius:10px;padding:10px;font-size:15px}textarea{min-height:80px;resize:vertical}
+.advice{background:#081624;border-left:4px solid var(--blue);border-radius:8px;padding:12px;line-height:1.5}.muted{color:var(--muted)}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.stat{background:#091624;border:1px solid var(--line);border-radius:12px;padding:11px}.stat b{font-size:20px;display:block}.stat span{font-size:11px;color:var(--muted)}
+table{width:100%;border-collapse:collapse}
+.ok{font-weight:850}.bad{font-weight:850}th,td{padding:9px;border-bottom:1px solid var(--line);text-align:left;font-size:12px;vertical-align:top}th{color:var(--muted)}tr.now{background:#12354f}tr.missed{background:#361e27}tr.late{background:#332c19}
+.progress{height:9px;background:#16293e;border-radius:20px;overflow:hidden;margin:10px 0}.bar{height:100%;background:var(--blue);width:0}
+.log{max-height:240px;overflow:auto;font-size:12px;color:#b6c9db;line-height:1.7}.formgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:9px}.formgrid2{display:grid;grid-template-columns:1fr 1fr;gap:9px}
+.panel{display:none}.panel.active{display:block}.pill{display:inline-block;padding:4px 8px;border-radius:20px;background:#173650;margin:2px;font-size:11px}.ok{color:var(--green)}.warn{color:var(--yellow)}.bad{color:var(--red)}
+.small{font-size:12px;color:var(--muted);line-height:1.5}.list{display:grid;gap:8px}.item{background:#091624;border:1px solid var(--line);border-radius:12px;padding:10px}
+@media(max-width:950px){.grid{grid-template-columns:1fr}.wide{grid-column:auto}.stats{grid-template-columns:repeat(3,1fr)}.formgrid{grid-template-columns:1fr 1fr}.clock{font-size:22px}.circle{width:230px;height:230px}}
+@media(max-width:600px){.stats,.formgrid,.formgrid2{grid-template-columns:1fr}.app{padding:10px}.task{font-size:24px}}
+</style>
+</head>
+<body>
+<div class="app">
+<div class="top">
+  <div class="brand"><h1>NEET 2027 — AI Mentor • Chrome Best Edition</h1><p>Offline • Fixed Routine • Focus Timer • Attendance • Questions • Revision • Tests • Analytics • Chapter Matrix • Backup</p></div>
+  <div class="clock"><div id="clock">--:--:--</div><div class="date" id="date">--</div></div>
+</div>
+
+<nav>
+<button onclick="tab('home')">🏠 Mentor</button><button onclick="tab('history')">📚 History</button><button onclick="tab('questions')">📝 Questions</button><button onclick="tab('revision')">🔁 Revision</button><button onclick="tab('tests')">🧪 Tests</button><button onclick="tab('analytics')">📊 Analytics</button><button onclick="tab('roadmap')">🗓️ 188-Day Plan</button><button onclick="tab('chapters')">📖 Chapter Matrix</button><button onclick="tab('settings')">⚙️ Settings</button>
+</nav>
+
+<div id="home" class="panel active">
+<div class="grid">
+<section class="card">
+ <span class="badge" id="status">CHECKING</span>
+ <div class="slot" id="slot">SLOT —</div><div class="task" id="task">Loading…</div><div class="topic" id="topic">—</div>
+ <div class="circle"><svg viewBox="0 0 270 270"><circle class="track" cx="135" cy="135" r="118"/><circle class="fill" id="ring" cx="135" cy="135" r="118"/></svg><div class="time"><b id="timer">00:00:00</b><span>TIME REMAINING</span></div></div>
+ <div class="progress"><div class="bar" id="bar"></div></div>
+ <div style="text-align:center"><button onclick="startTimer()">▶ START / RESUME</button><button class="alt" onclick="pauseTimer()">⏸ PAUSE (REASON REQUIRED)</button><button class="alt" onclick="stopTimer()">⏹ STOP</button></div>
+ <div class="muted" id="timing" style="text-align:center;font-size:12px;margin-top:8px">—</div>
+</section>
+
+<section class="card">
+ <span class="badge">TODAY'S MENTOR STATUS</span><h2 id="mentor" style="margin:9px 0 6px">—</h2><div class="advice" id="advice">—</div>
+ <div style="margin-top:16px"><label class="muted">SLOT TOPIC</label><input id="topicInput" placeholder="Enter slot topic..."></div>
+ <button class="alt" onclick="saveTopic()">💾 SAVE TOPIC</button><button class="green" onclick="markCurrentSlot()">✅ MARK SLOT ATTENDANCE</button><button class="alt" onclick="markDayAttendance()">📅 MARK DAY ATTENDANCE</button><button class="alt" onclick="testSound()">🔊 TEST SOUND</button><button class="alt" onclick="notifyMe()">🔔 ENABLE REMINDER</button>
+ <div class="guide small" style="margin-top:15px"><b>Strict rule:</b> every slot has a fixed end time. Late arrival never shifts the day. Resume continues from saved focus time. Pause requires a written reason.</div>
+ <div id="lateMsg" class="small" style="margin-top:10px"></div>
+</section>
+
+<section class="card wide"><div class="stats">
+<div class="stat"><b id="attendance">0%</b><span>Slot Attendance Today</span></div><div class="stat"><b id="dayAttend">ABSENT</b><span>Day Attendance</span></div><div class="stat"><b id="study">00:00:00</b><span>Focused Study</span></div><div class="stat"><b id="late">00:00:00</b><span>Late Time</span></div><div class="stat"><b id="missed">0</b><span>Missed Slots</span></div><div class="stat"><b id="waste">00:00:00</b><span>Untracked Time</span></div><div class="stat"><b id="streak">0</b><span>Day Streak</span></div>
+</div></section>
+
+<section class="card wide">
+<div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap"><span class="badge">FULL DAILY ROUTINE</span><span class="small">11 fixed slots • 05:30–23:45</span></div>
+<table><thead><tr><th>Slot</th><th>Time</th><th>Activity</th><th>Attendance</th><th>Late</th><th>Focus</th><th>Status</th><th>Pause Reasons</th></tr></thead><tbody id="rows"></tbody></table>
+</section>
+
+<section class="card wide"><span class="badge">📌 TODAY'S QUICK PLAN</span><div id="quickPlan" style="line-height:1.8;margin-top:10px"></div></section>
+<section class="card"><span class="badge">MENTOR LOG</span><div id="log" class="log" style="margin-top:8px">No events.</div></section>
+</div></div>
+
+
+<div id="history" class="panel"><section class="card">
+<h2>📚 Day-by-Day History</h2>
+<div class="formgrid2"><label>Search Date<input id="historySearch" placeholder="YYYY-MM-DD" oninput="renderHistory()"></label><div><button class="alt" onclick="renderHistory()">🔄 REFRESH HISTORY</button></div></div>
+<div style="overflow:auto;margin-top:12px"><table><thead><tr><th>Date</th><th>Day Attendance</th><th>Slots</th><th>Focus</th><th>Late</th><th>Missed</th><th>Questions</th><th>Accuracy</th></tr></thead><tbody id="historyRows"></tbody></table></div>
+</section></div>
+<div id="questions" class="panel"><section class="card">
+<h2>📝 Daily Question Tracker</h2><div class="formgrid" id="qForm"></div><button class="green" onclick="saveQuestions()">💾 SAVE TODAY'S QUESTIONS</button><div id="questionStats" style="margin-top:14px"></div></section></div>
+
+<div id="revision" class="panel"><section class="card">
+<h2>🔁 Revision Tracker</h2><div class="formgrid2"><label>Chapter / Topic<input id="revTopic" placeholder="e.g. Cell Cycle"></label><label>Revision Round<select id="revRound"><option>1st Revision</option><option>2nd Revision</option><option>3rd Revision</option><option>Final Revision</option></select></label></div>
+<label style="display:block;margin-top:9px">Notes / Weak Point<textarea id="revNote" placeholder="क्या भूल रहे हो / क्या revise करना है?"></textarea></label><button class="green" onclick="addRevision()">➕ ADD REVISION</button><div id="revisionList" class="list" style="margin-top:14px"></div></section></div>
+
+<div id="tests" class="panel"><section class="card">
+<h2>🧪 Mock Test Tracker</h2><div class="formgrid" id="testForm"></div>
+<button class="green" onclick="addTest()">➕ SAVE TEST</button><div id="testList" class="list" style="margin-top:14px"></div></section></div>
+
+<div id="analytics" class="panel"><section class="card">
+<h2>📊 Complete Analysis — Today / 7 Days / Month</h2><div class="stats"><div class="stat"><b id="dayAttend">0%</b><span>Day Attendance</span></div><div class="stat"><b id="dayStudy">0m</b><span>Day Focus</span></div><div class="stat"><b id="weekAttend">0%</b><span>7-Day Attendance</span></div><div class="stat"><b id="weekStudy">0m</b><span>7-Day Focus</span></div><div class="stat"><b id="monthAttend">0%</b><span>Month Attendance</span></div><div class="stat"><b id="monthStudy">0m</b><span>Month Focus</span></div></div><div id="analyticsDetail" style="line-height:1.8;margin-top:14px"></div>
+<h3>Subject-wise Focus</h3><div id="subjectFocus"></div><h3>Recent Mock Tests</h3><div id="testAnalytics"></div></section></div>
+
+
+<div id="roadmap" class="panel"><section class="card">
+<h2>🗓️ NEET 2027 — 188-Day Roadmap & 7-Day Target Lock</h2>
+<p class="small">Start: 26 Oct 2026. Plan is editable and stored only in this browser. Exam date is provisional; update it in Settings when officially confirmed.</p>
+<div class="formgrid2">
+<label>Roadmap Start Date<input id="roadmapStart" type="date" value="2026-10-26"></label>
+<label>Daily Plan Date<input id="roadmapDate" type="date"></label>
+</div>
+<div class="formgrid" id="roadForm"></div>
+<label>Questions / revision / test target<textarea id="roadPractice" placeholder="MCQs, PYQs, revision or test"></textarea></label>
+<button class="green" onclick="saveRoadDay()">💾 SAVE DAILY PLAN</button>
+<button class="alt" onclick="loadRoadDay()">LOAD SELECTED DATE</button>
+<hr style="border-color:#223c57;margin:18px 0">
+<h3>7-Day Target Lock</h3>
+<label>Week starting date<input id="weekDate" type="date"></label>
+<label>Next 7 days target<textarea id="weekTarget" placeholder="Biology: ...&#10;Chemistry: ...&#10;Physics: ...&#10;Test / revision: ..."></textarea></label>
+<button class="yellow" onclick="saveWeekTarget()">🔒 LOCK / UPDATE 7-DAY TARGET</button>
+<div id="weekTargetStatus" class="advice" style="margin-top:8px"></div>
+<hr style="border-color:#223c57;margin:18px 0">
+<div class="row" style="display:flex;gap:8px;flex-wrap:wrap;align-items:center">
+<button class="alt" onclick="generateRoadmap()">GENERATE 188-DAY OUTLINE</button>
+<button class="alt" onclick="renderRoadmap()">REFRESH ROADMAP</button>
+</div>
+<div id="roadmapSummary" class="advice" style="margin-top:12px"></div>
+<div style="overflow:auto;margin-top:12px"><table><thead><tr id="roadHead"></tr></thead><tbody id="roadmapRows"></tbody></table></div>
+</section></div>
+
+<div id="chapters" class="panel"><section class="card">
+<h2>📖 NEET Chapter Matrix — Subject-wise System</h2>
+<div class="advice">Official-syllabus baseline: NEET UG 2026 syllabus (latest official syllabus located during this update). NEET UG 2027 syllabus has not been located as a published official document as of 26 Oct 2026; when NMC/NTA publish it, compare and update this list. Your Efforts vs Rewards PDF is used as a separate priority signal, not as a reason to skip any syllabus chapter.</div>
+<div class="stats" style="margin-top:12px">
+<div class="stat"><b id="chTotal">0</b><span>Chapters in tracker</span></div>
+<div class="stat"><b id="chDone">0</b><span>Marked complete</span></div>
+<div class="stat"><b id="chProgress">0%</b><span>Overall completion</span></div>
+<div class="stat"><b id="chHigh">0</b><span>High-priority chapters (yours)</span></div>
+<div class="stat"><b id="chPending">0</b><span>Not started</span></div>
+<div class="stat"><b id="chSubs">0</b><span>Subjects</span></div>
+</div>
+<div class="formgrid" style="margin-top:12px">
+<label>Section<select id="chapterSubject" onchange="renderChapters()"><option value="All">All Sections</option><option>Physics</option><option>Physical Chemistry</option><option>Organic Chemistry</option><option>Inorganic Chemistry</option><option>Botany</option><option>Zoology</option></select></label>
+<label>Completion status<select id="chapterStatusFilter" onchange="renderChapters()"><option value="All">All statuses</option><option value="Not started">Not started</option><option value="Lectures in progress">Lectures in progress</option><option value="Questions in progress">Questions in progress</option><option value="Revision pending">Revision pending</option><option value="Completed">Completed</option></select></label>
+<label>Search chapter<input id="chapterSearch" placeholder="Search chapter..." oninput="renderChapters()"></label>
+</div>
+<div class="formgrid2" style="margin-top:10px">
+<label>Show priority<select id="chapterPriorityFilter" onchange="renderChapters()"><option value="All">All priorities</option><option value="High">High efficiency (PDF)</option><option value="Medium">Medium efficiency (PDF)</option><option value="Unranked">Not ranked in supplied PDF</option></select></label>
+<div><button class="alt" onclick="exportChapterCSV()">⬇ Export Chapter Matrix CSV</button><button class="alt" onclick="resetChapterStatuses()">Reset chapter statuses</button></div>
+</div>
+<p class="small">Workflow for each chapter: mark lecture progress → complete NCERT/notes → log chapter-wise MCQs/PYQs in your question notebook → revise → mark complete. The status is saved locally on this browser/device.</p>
+<div style="overflow:auto;margin-top:12px"><table><thead><tr><th>Section</th><th>Chapter</th><th>Your priority</th><th>Recommended chapter workflow</th><th>Status</th><th>Target date</th><th>Notes</th></tr></thead><tbody id="chapterRows"></tbody></table></div>
+<div id="chapterFooter" class="advice" style="margin-top:12px"></div>
+</section></div>
+
+<div id="settings" class="panel"><section class="card">
+<h2>⚙️ Backup / Settings</h2><div class="formgrid2"><label>NEET Target Date<input id="targetDate" type="date"></label><label>Reminder Minutes Before Slot<input id="reminderMin" type="number" min="0" max="60" value="2"></label></div>
+<div style="margin-top:10px"><button onclick="exportData()">⬇ EXPORT BACKUP</button><button onclick="importData()">⬆ IMPORT BACKUP</button><button class="red" onclick="resetToday()">RESET TODAY</button><button class="yellow" onclick="clearAllData()">CLEAR ALL DATA</button></div>
+<div class="advice" style="margin-top:12px"><b>NEET 2027 Countdown:</b> <span id="countdown"></span><br><span class="small">Default target: 02 May 2027. Change it above if the official exam date differs.</span></div>
+<p class="small">Data stays in this Chrome browser using localStorage. Export a JSON backup regularly. This is a standalone offline app; no account or server is required.</p></section></div>
+</div>
+
+<script>
+/* ===== EXAM CONFIG (SSC / Computer Science / GATE / JEE / UPSC) ===== */
+const CFG=(function(){
+const P=new URLSearchParams(location.search),ID=P.get('exam')||'SSC',KEY="ajay_mentor_"+ID.replace(/\s+/g,'_')+"_v1";
+const parse=(s,subject)=>{let part='',o=[];s.split(';').forEach(x=>{x=x.trim();if(!x)return;if(x[0]==='#')part=x.slice(1);else o.push({section:subject,part,name:x})});return o};
+const today=new Date().toLocaleDateString('en-CA',{timeZone:'Asia/Kolkata'});
+const slots=(L,pd)=>{const m=(n,i,a,b)=>[n,L[i][0],a,b,L[i][2]||pd,L[i][1]];return[
+["01","GOOD MORNING","05:30","06:30","Wake up • Freshen up • Exercise",null],m("02",0,"06:30","08:00"),
+["03","BREAKFAST TIME","08:00","08:30","Prepare + eat breakfast",null],m("04",1,"08:30","10:45"),
+["05","LUNCH TIME","10:45","12:30","Prepare + eat lunch",null],m("06",2,"12:30","14:00"),m("07",3,"14:00","17:00"),
+["08","BREAK TIME","17:00","17:15","15 minute break",null],m("09",4,"17:15","18:45"),
+["10","DINNER TIME","18:45","20:00","Prepare + eat dinner",null],m("11",5,"20:00","22:30")]};
+const EM="#Core;Linear Algebra;Calculus;Differential Equations;Complex Variables;Probability & Statistics;Numerical Methods;Transform Theory;Discrete Mathematics & Graph Theory (CS/IT)";
+const GA="#Verbal;Grammar & Sentence Completion;Vocabulary & Verbal Reasoning;Reading Comprehension;#Numerical;Arithmetic & Data Interpretation;Algebra & Mensuration;Probability & Permutation;Logical & Spatial Reasoning";
+const BR={"CS & IT":"#Core;Digital Logic;Computer Organization & Architecture;Programming & Data Structures;Algorithms;Theory of Computation;Compiler Design;Operating Systems;Databases;Computer Networks",
+"Mechanical":"#Core;Engineering Mechanics;Strength of Materials;Theory of Machines;Machine Design;Fluid Mechanics;Heat Transfer;Thermodynamics;IC Engines, Refrigeration & Power Plants;Manufacturing Engineering;Industrial Engineering;Materials Science",
+"Electrical":"#Core;Electric Circuits;Electromagnetic Fields;Signals & Systems;Electrical Machines;Power Systems;Control Systems;Electrical & Electronic Measurements;Analog Electronics;Digital Electronics;Power Electronics",
+"Civil":"#Core;Engineering Mechanics;Structural Analysis;RCC & Steel Design;Geotechnical Engineering;Fluid Mechanics & Hydraulics;Hydrology & Irrigation;Environmental Engineering;Transportation Engineering;Surveying;Construction Materials & Management"};
+let branch=null;try{branch=JSON.parse(localStorage.getItem(KEY)||"{}").branch}catch(e){} branch=BR[branch]?branch:"CS & IT";
+const GP="PYQs • Numerical practice • Topic tests";
+const EX={
+SSC:{short:"SSC",subs:["Maths","Reasoning","English","GS"],total:200,days:180,pd:"Speed practice • PYQs • Sectional tests",
+L:[["MATHS","Maths"],["REASONING","Reasoning"],["ENGLISH","English"],["GENERAL STUDIES","GS","History • Polity • Geography • Science • Economy"],["MATHS + REASONING PRACTICE","Maths"],["MOCK TEST + REVISION + CURRENT AFFAIRS","GS","Sectional / full mock • Error log • Current affairs"]],
+ch:{Maths:"#Arithmetic;Number System;Simplification & Approximation;HCF & LCM;Percentage;Ratio & Proportion;Average;Profit, Loss & Discount;Simple & Compound Interest;Time & Work;Pipes & Cisterns;Time, Speed & Distance;Mixture & Alligation;Partnership;#Algebra;Linear Equations;Quadratic Equations;Algebraic Identities;Inequalities;#Geometry;Lines & Angles;Triangles;Circles;Quadrilaterals & Polygons;Coordinate Geometry;#Mensuration;2D Mensuration;3D Mensuration;#Trigonometry;Ratios & Identities;Heights & Distances;#Data;Data Interpretation;Statistics",
+Reasoning:"#Verbal;Analogy;Classification (Odd One Out);Number & Alphabet Series;Coding-Decoding;Blood Relations;Direction & Distance;Ranking & Order;Syllogism;Statement & Conclusions;Venn Diagrams;Mathematical Operations;Calendar & Clock;#Non-verbal;Figure Series;Mirror & Water Image;Paper Folding & Cutting;Embedded Figures;Counting Figures;Cubes & Dice",
+English:"#Grammar;Parts of Speech;Tenses;Subject-Verb Agreement;Articles & Prepositions;Active-Passive Voice;Direct-Indirect Speech;Error Spotting;Sentence Improvement;#Vocabulary;Synonyms & Antonyms;One Word Substitution;Idioms & Phrases;Spelling Errors;#Comprehension;Reading Comprehension;Cloze Test;Para Jumbles;Fill in the Blanks",
+GS:"#History;Ancient India;Medieval India;Modern India;Indian National Movement;#Polity;Constitution & Preamble;Fundamental Rights & DPSP;Parliament & Judiciary;Panchayati Raj;#Geography;Indian Geography;World Geography;Climate & Rivers;#Economy;Indian Economy Basics;Budget & Banking;#Science;Physics Basics;Chemistry Basics;Biology & Human Body;#Static GK & Current Affairs;Static GK;Awards, Books & Sports;Current Affairs"}},
+"Computer Science":{short:"CS",subs:["Python","javascript","Java","C++","DSA"],total:100,days:150,pd:"Coding practice • Problems • Debugging",wf:"Concept → code along → practice problems → mini project → revision",
+L:[["PYTHON","Python","Concept + code along"],["JAVASCRIPT","javascript","Concept + code along"],["JAVA","Java","Concept + code along"],["DSA LECTURE","DSA","Theory + dry run"],["CODING PRACTICE (DSA PROBLEMS)","DSA"],["C++ + PROJECT WORK + REVISION","C++","Practice • Mini project • Revision"]],
+ch:{Python:"#Basics;Syntax, Variables & Data Types;Operators & Input/Output;Conditionals & Loops;Functions & Lambda;#Data;Strings;Lists & Tuples;Dictionaries & Sets;Comprehensions;#Advanced;File Handling;Exception Handling;OOP in Python;Modules & Packages;Decorators & Generators;#Libraries & Project;NumPy & Pandas;Matplotlib;Python Mini Project",
+javascript:"#Basics;Variables, Types & Operators;Control Flow & Loops;Functions & Scope;Arrays & Objects;#Core;ES6+ Features;DOM Manipulation;Events;Closures & Hoisting;this, call/apply/bind;Prototypes & Classes;#Async;Callbacks & Promises;async/await & Fetch;Error Handling;Modules;LocalStorage & JSON;#Project;JavaScript Mini Project",
+Java:"#Basics;Syntax, Data Types & Operators;Control Statements;Arrays & Strings;Methods;#OOP;Classes & Objects;Inheritance & Polymorphism;Abstraction & Interfaces;Encapsulation & Packages;#Advanced;Exception Handling;Collections Framework;Generics;File I/O;Multithreading;Streams & Lambda;JDBC Basics;#Project;Java Mini Project",
+"C++":"#Basics;Syntax, Data Types & I/O;Control Flow & Loops;Functions & Recursion;Arrays & Strings;Pointers & References;#OOP;Classes & Objects;Constructors & Destructors;Inheritance & Polymorphism;Operator Overloading;#Advanced;Templates;STL: Vector, Map, Set;File Handling;Exception Handling;Memory Management;#Project;C++ Mini Project",
+DSA:"#Basics;Complexity Analysis;Arrays;Strings;Recursion & Backtracking;Searching & Sorting;#Linear;Linked Lists;Stacks;Queues;Hashing;#Non-linear;Trees & BST;Heaps & Priority Queue;Graphs: BFS/DFS;Shortest Path;Tries;#Paradigms;Greedy;Dynamic Programming;Two Pointers & Sliding Window;Bit Manipulation;#Practice;Contests & Mock Interviews"}},
+GATE:{short:"GATE",subs:["Engineering Maths","General Aptitude",branch],total:100,days:180,pd:GP,branches:Object.keys(BR),
+L:[[branch+" (CORE 1)",branch],[branch+" (CORE 2)",branch],["ENGINEERING MATHS","Engineering Maths"],[branch+" LECTURE",branch],[branch+" PYQ PRACTICE",branch],["GENERAL APTITUDE + PYQs","General Aptitude"]],
+ch:{"Engineering Maths":EM,"General Aptitude":GA,[branch]:BR[branch]}},
+JEE:{short:"JEE",subs:["Physics","Maths","Chemistry"],total:300,days:200,pd:"MCQs • PYQs • Numericals",
+L:[["MATHS","Maths"],["CHEMISTRY","Chemistry"],["CHEMISTRY QUESTIONS","Chemistry"],["PHYSICS LECTURE","Physics"],["PHYSICS QUESTIONS","Physics"],["MATHS PROBLEM PRACTICE + DOUBT BOOK","Maths","Problems • PYQs • Doubt book"]],
+ch:{Physics:"#Mechanics;Units & Measurements;Kinematics;Laws of Motion;Work, Energy & Power;Rotational Motion;Gravitation;Properties of Solids & Fluids;#Thermal;Thermodynamics;Kinetic Theory;Oscillations;Waves;#Electromagnetism;Electrostatics;Capacitance;Current Electricity;Magnetic Effects of Current;Magnetism & Matter;Electromagnetic Induction;Alternating Current;EM Waves;#Optics & Modern;Ray Optics;Wave Optics;Dual Nature;Atoms & Nuclei;Semiconductors;Experimental Skills",
+Maths:"#Algebra;Sets & Relations;Complex Numbers;Quadratic Equations;Sequences & Series;Permutations & Combinations;Binomial Theorem;Matrices & Determinants;Probability;Statistics;#Trigonometry;Trigonometric Functions & Equations;Inverse Trigonometry;#Coordinate Geometry;Straight Lines;Circles;Parabola;Ellipse;Hyperbola;#Calculus;Limits, Continuity & Differentiability;Application of Derivatives;Indefinite Integration;Definite Integration & Area;Differential Equations;#Vectors & 3D;Vector Algebra;3D Geometry",
+Chemistry:"#Physical;Mole Concept;Atomic Structure;Thermodynamics;Chemical Equilibrium;Ionic Equilibrium;Redox Reactions;Solutions;Electrochemistry;Chemical Kinetics;Solid State & Surface Chemistry;#Inorganic;Periodic Table;Chemical Bonding;s-Block;p-Block;d & f Block;Coordination Compounds;Metallurgy & Qualitative Analysis;Environmental Chemistry;#Organic;GOC;Isomerism;Hydrocarbons;Haloalkanes & Haloarenes;Alcohols, Phenols & Ethers;Aldehydes, Ketones & Acids;Amines;Biomolecules & Polymers;Practical Chemistry"}},
+UPSC:{short:"UPSC",subs:["History","Polity","Geography","Economy","Environment","Science & Tech","Current Affairs","CSAT"],total:200,days:365,pd:"MCQs • PYQs • Answer writing",wf:"Standard book/notes → notes making → PYQs + MCQs → answer writing → revision",
+L:[["HISTORY","History"],["POLITY","Polity"],["GEOGRAPHY","Geography"],["ECONOMY + ENVIRONMENT + SCI-TECH","Economy","Rotate Economy • Environment • Science & Tech"],["ANSWER WRITING + MCQ PRACTICE","Polity","Answer writing • PYQs • MCQs"],["NEWSPAPER + CURRENT AFFAIRS + CSAT","Current Affairs","Newspaper • Monthly compilation • CSAT practice"]],
+ch:{History:"#Ancient;Prehistoric & Indus Valley;Vedic & Mauryan Age;Gupta & Post-Gupta Period;#Medieval;Delhi Sultanate;Mughal Empire;Bhakti & Sufi Movements;#Modern;Advent of Europeans & British Expansion;Revolt of 1857;Freedom Struggle: Moderates to Gandhian Era;Post-Independence India;#Art & Culture;Architecture, Painting & Music;Religion, Literature & Festivals",
+Polity:"Constitution Making & Preamble;Fundamental Rights & DPSP;Union Executive;Parliament;Judiciary;State Government;Federalism & Centre-State Relations;Local Government;Constitutional & Non-Constitutional Bodies;Amendments & Emergency;Governance & Policies",
+Geography:"#Physical;Geomorphology;Climatology;Oceanography;#Indian;Physiography & Drainage;Climate, Soils & Vegetation;Agriculture & Industries;#World & Human;World Regions & Resources;Population & Settlements",
+Economy:"Basic Concepts & National Income;Money, Banking & Inflation;Fiscal Policy & Budget;External Sector & Trade;Agriculture & Food Security;Industry & Infrastructure;Poverty, Unemployment & Inclusive Growth;Economic Survey & Schemes",
+Environment:"Ecosystem & Biodiversity;Climate Change;Pollution & Environmental Laws;Conservation & Protected Areas;International Conventions",
+"Science & Tech":"Basic Science Concepts;Space Technology;Defence & Nuclear;Biotechnology & Health;IT, AI & Cyber;Energy Technologies",
+"Current Affairs":"Daily Newspaper;Monthly Compilation;Government Schemes;International Relations;Reports & Indices",
+CSAT:"Reading Comprehension;Logical Reasoning;Basic Numeracy;Data Interpretation;Decision Making"}}};
+const e=EX[ID]||EX.SSC,name=EX[ID]?ID:"SSC";
+let chapters=[];e.subs.forEach(s=>chapters=chapters.concat(parse(e.ch[s]||"",s)));
+return{id:name,title:name,short:e.short,key:KEY,slots:slots(e.L,e.pd),subjects:e.subs,chapters,total:e.total,days:e.days,target:"",start:today,branches:e.branches||null,branch,
+workflow:e.wf||"Lecture/notes → chapter-wise practice + PYQs → error log → revision"}})();
+</script>
+<script>
+
+let S=CFG.slots;
+const KEY=CFG.key;
+let db=JSON.parse(localStorage.getItem(KEY)||"null")||{topic:"Full Test Syllabus",target:CFG.target,reminder:2,days:{},revisions:[],tests:[],logs:[],roadmap:{},weekTargets:{},roadmapStart:CFG.start};
+let active=-1,running=false,paused=false,startStamp=0,accBefore=0,intv=null,lastReminderKey="";
+db.slotTopics ||= {}; db.roadDays ||= CFG.days; if(db.routine&&db.routine.length)S=db.routine; db.roadmap ||= {}; db.weekTargets ||= {}; db.roadmapStart ||= CFG.start;
+initUI();const ring=document.getElementById("ring"),R=118,C=2*Math.PI*R;ring.style.strokeDasharray=C;ring.style.strokeDashoffset=C;
+const pad=n=>String(n).padStart(2,"0");
+function dateKey(d=new Date()){return d.toLocaleDateString("en-CA",{timeZone:"Asia/Kolkata"})}
+function nowMin(){let s=new Date().toLocaleTimeString("en-GB",{timeZone:"Asia/Kolkata",hour12:false});let [h,m,sec]=s.split(":").map(Number);return h*60+m+sec/60}
+function mins(x){let [h,m]=x.split(":").map(Number);return h*60+m}
+function time12(hm){
+ let [h,m]=hm.split(":").map(Number),ap=h>=12?"PM":"AM",hh=h%12||12;
+ return `${hh}:${String(m).padStart(2,"0")} ${ap}`;
+}
+function fmt(sec){sec=Math.max(0,Math.floor(sec));let h=Math.floor(sec/3600),m=Math.floor(sec%3600/60),s=sec%60;return [h,m,s].map(pad).join(":")}
+function fm(sec){sec=Math.round(sec/60);return sec>=60?`${Math.floor(sec/60)}h ${sec%60}m`:`${sec}m`}
+function save(){localStorage.setItem(KEY,JSON.stringify(db))}
+function today(){let k=dateKey();if(!db.days[k])db.days[k]={slots:{},questions:null};return db.days[k]}
+function rec(i){return today().slots[i] ||= {study:0,late:0,att:false,opened:null,done:false,missed:false,pauseReasons:[],topic:""}}
+function log(x){db.logs.unshift(`[${new Date().toLocaleString("en-IN")}] ${x}`);db.logs=db.logs.slice(0,300);save();renderLog()}
+function current(){let n=nowMin();return S.findIndex(x=>n>=mins(x[2])&&n<mins(x[3]))}
+function tab(id){document.querySelectorAll(".panel").forEach(x=>x.classList.remove("active"));document.getElementById(id).classList.add("active");if(id==="analytics"){renderAnalytics();renderSubjectFocus()}if(id==="history")renderHistory();if(id==="revision")renderRevisions();if(id==="tests")renderTests();if(id==="roadmap"){loadRoadDay();renderRoadmap()}if(id==="chapters"){renderChapters()}}
+function startTimer(){
+ let i=current();
+ if(i<0&&paused&&active>=0){let n=nowMin();if(n>=mins(S[active][2])&&n<mins(S[active][3]))i=active}
+ if(i<0){alert("Abhi koi active scheduled slot nahi hai.");return}
+ active=i;let r=rec(i),n=nowMin();if(r.done){alert("Ye slot complete ho chuka hai.");return}
+ if(!r.att){r.att=true;r.opened=Date.now();r.late=Math.max(0,Math.round((n-mins(S[i][2]))*60));today().dayAttend=true;today().dayAttendTime=today().dayAttendTime||new Date().toISOString();log(r.late?`Slot ${S[i][0]}: ${fmt(r.late)} late.`:`Slot ${S[i][0]}: on time start.`)}
+ r.missed=false;accBefore=Number(r.study)||0;running=true;paused=false;startStamp=Date.now();clearInterval(intv);intv=setInterval(tick,250);testSound();save();tick()
+}
+function pauseTimer(){
+ if(!running||active<0)return;
+ let r=rec(active),total=(mins(S[active][3])-mins(S[active][2]))*60,elapsed=Math.max(0,(Date.now()-startStamp)/1000),focus=Math.min(total,accBefore+elapsed);
+ let reason=prompt("⏸️ PAUSE REASON LIKHIYE\n\nExample: Bathroom jana hai / Pani peena hai / Walk karna hai\n\nReason likhkar OK/Enter dabaiye. Cancel = pause nahi hoga:");
+ r.study=focus;
+ if(reason===null||!reason.trim()){save();draw();alert("❌ Pause nahi hua. Reason compulsory hai.");return}
+ running=false;paused=true;clearInterval(intv);intv=null;r.pauseReasons ||= [];r.pauseReasons.push({time:new Date().toISOString(),reason:reason.trim(),duration:Math.round(elapsed)});log(`⏸️ PAUSED — ${reason.trim()} (${fmt(elapsed)})`);save();draw()
+}
+function endTimeWatchdog(){
+  if(active<0)return;
+  let r=rec(active),end=mins(S[active][3])*60,now=nowMin()*60;
+  if(!r.done && now>=end){
+    r.done=true;
+    r.study=Math.min((mins(S[active][3])-mins(S[active][2]))*60,r.study||0);
+    running=false;
+    paused=false;
+    clearInterval(intv); intv=null;
+    alarm();
+    log(`TIME UP — SLOT ${S[active][0]} ${S[active][1]}`);
+    draw();
+    alert("⏰ TIME UP — STOP THIS SLOT NOW.");
+    save();
+  }
+}
+function stopTimer(){
+ if(active>=0&&running){let r=rec(active),total=(mins(S[active][3])-mins(S[active][2]))*60,elapsed=Math.max(0,(Date.now()-startStamp)/1000);r.study=Math.min(total,accBefore+elapsed)}
+ running=false;paused=false;clearInterval(intv);intv=null;if(active>=0)log(`Slot ${S[active][0]} stopped.`);save();draw()
+}
+setInterval(endTimeWatchdog, 250);
+function tick(){
+ if(active<0)return;let r=rec(active),end=mins(S[active][3])*60,rem=end-nowMin()*60,total=(mins(S[active][3])-mins(S[active][2]))*60;
+ if(running){let elapsed=(Date.now()-startStamp)/1000;r.study=Math.max(r.study,Math.min(total,accBefore+elapsed));save()}
+ if(rem<=0){r.done=true;r.study=Math.min(total,r.study||total);running=false;paused=false;clearInterval(intv);intv=null;alarm();log(`TIME UP — SLOT ${S[active][0]} ${S[active][1]}`);alert("⏰ TIME UP — STOP THIS SLOT NOW.")}
+ draw()
+}
+function reconcile(){
+ let n=nowMin(),d=today();
+ S.forEach((x,i)=>{let r=rec(i),st=mins(x[2]),en=mins(x[3]);if(n>=en&&!r.att&&!r.done)r.missed=true;let available=Math.max(0,Math.min(en,n)-st)*60;r.waste=Math.max(0,Math.round(available-(r.study||0)))});
+ save()
+}
+function draw(){
+ let d=new Date(),n=nowMin(),i=current();document.getElementById("clock").textContent=d.toLocaleTimeString("en-IN",{hour12:true});document.getElementById("date").textContent=d.toLocaleDateString("en-IN",{weekday:"long",day:"2-digit",month:"long",year:"numeric"});
+ if(i<0){document.getElementById("status").textContent="NO ACTIVE SLOT";document.getElementById("slot").textContent="SLOT —";document.getElementById("task").textContent=n<mins(S[0][2])?"WAITING FOR 05:30":"BETWEEN / AFTER SLOTS";document.getElementById("topic").textContent="";document.getElementById("timer").textContent="00:00:00";ring.style.strokeDashoffset=C;document.getElementById("bar").style.width="0";document.getElementById("mentor").textContent="SCHEDULE CHECK";document.getElementById("advice").textContent=missedCount()?`⚠️ Aaj ${missedCount()} slot(s) miss ho chuke hain.`:next();renderRows();stats();return}
+ active=i;let x=S[i],st=mins(x[2]),en=mins(x[3]),rem=Math.max(0,(en-n)*60),total=(en-st)*60,r=rec(i);
+ document.getElementById("status").textContent=r.late?`LATE BY ${fmt(r.late)}`:"ON TIME";document.getElementById("slot").textContent=`SLOT ${x[0]}`;document.getElementById("task").textContent=x[1];document.getElementById("topic").textContent=(rec(i).topic||db.slotTopics[i]||x[4]); document.getElementById("topicInput").value=(rec(i).topic||db.slotTopics[i]||"");document.getElementById("timer").textContent=fmt(rem);document.getElementById("timing").textContent=`Scheduled ${time12(x[2])}–${time12(x[3])} • Fixed end ${time12(x[3])} • Current ${d.toLocaleTimeString("en-IN",{hour12:true})}`;ring.style.strokeDashoffset=C*(1-rem/total);document.getElementById("bar").style.width=(100*(1-rem/total))+"%";
+ document.getElementById("mentor").textContent=r.late?"⚠️ LATE ARRIVAL DETECTED":"🎯 FOCUS NOW";document.getElementById("advice").textContent=r.late?`Aap ${fmt(r.late)} late aaye. Extra time nahi. Slot ${x[0]} ${x[3]} par end hoga. Remaining ${fmt(rem)} mein task complete karo.`:`Slot ${x[0]} active hai. Abhi sirf ${x[1]} par focus karo. End time ${time12(x[3])} hai.`;document.getElementById("lateMsg").textContent=r.late?`Late arrival: ${fmt(r.late)} • Remaining: ${fmt(rem)}`:"";
+ renderRows();stats();quickPlan();checkReminder()
+}
+function next(){let n=nowMin();for(let x of S)if(n<mins(x[2]))return`Next: SLOT ${x[0]} — ${x[1]} at ${time12(x[2])}`;return"Today's routine complete."}
+function missedCount(){return S.filter((x,i)=>rec(i).missed).length}
+
+function markCurrentSlot(){
+ let i=current(); if(i<0){alert("Abhi koi active scheduled slot nahi hai.");return}
+ let r=rec(i),n=nowMin();
+ if(!r.att){r.att=true;r.opened=Date.now();r.late=Math.max(0,Math.round((n-mins(S[i][2]))*60));log(`MANUAL ATTENDANCE: SLOT ${S[i][0]} — ${r.late?fmt(r.late)+" late":"ON TIME"}`);save();draw();alert(`✅ SLOT ${S[i][0]} attendance marked.\n${r.late?("Late: "+fmt(r.late)):"On time."}`)}
+ else alert("इस slot की attendance पहले ही marked है.");
+}
+function markDayAttendance(){
+ let d=today();d.dayAttend=true;d.dayAttendTime=d.dayAttendTime||new Date().toISOString();save();log("DAY ATTENDANCE marked PRESENT");draw();alert("📅 आज की Day Attendance PRESENT mark हो गई.");
+}
+function dayPeriod(k){
+ let d=db.days[k],o={present:0,study:0,late:0,miss:0,questions:0,correct:0};
+ if(!d)return o;
+ S.forEach((x,i)=>{let r=d.slots?.[i];if(r){if(r.att)o.present++;o.study+=r.study||0;o.late+=r.late||0;if(r.missed)o.miss++}});
+ let q=d.questions;
+ if(q){Object.values(q).forEach(z=>{o.questions+=z?.a||0;o.correct+=z?.c||0})}
+ return o
+}
+function renderHistory(){
+ let q=(document.getElementById("historySearch")?.value||"").trim();
+ let keys=Object.keys(db.days).sort().reverse().filter(k=>!q||k.includes(q));
+ document.getElementById("historyRows").innerHTML=keys.map(k=>{
+  let d=db.days[k],a=dayPeriod(k),acc=a.questions?Math.round(a.correct/a.questions*100):0;
+  return `<tr><td><b>${k}</b></td><td>${d.dayAttend?"PRESENT":"—"}</td><td>${a.present}/${S.length}</td><td>${fmt(a.study)}</td><td>${fmt(a.late)}</td><td>${a.miss}</td><td>${a.questions}</td><td>${acc}%</td></tr>`;
+ }).join("")||`<tr><td colspan="8">No saved history yet.</td></tr>`;
+}
+
+function renderRows(){
+ let n=nowMin();
+ document.getElementById("rows").innerHTML=S.map((x,i)=>{
+   let r=rec(i),st=mins(x[2]),en=mins(x[3]);
+   let status=i===current()?"NOW":r.done?"DONE":r.timeUp?"TIME UP — VERIFY":r.missed?"MISSED":r.att?"ATTENDED":n>=en?"MISSED":"UPCOMING";
+   let cl=status==="NOW"?"now":status==="MISSED"?"missed":r.late?"late":"";
+   let attendance=r.att?'<span class="ok">✅ PRESENT</span>':'<span class="bad">—</span>';
+   let topic=r.topic||db.slotTopics[i]||x[4];
+   let reasons=(r.pauseReasons||[]).map(p=>p.reason).join(" • ")||"—";
+   return `<tr class="${cl}">
+     <td><b>${x[0]}</b></td>
+     <td>${time12(x[2])}–${time12(x[3])}</td>
+     <td><b>${x[1]}</b><div class="small">${topic}</div></td>
+     <td>${attendance}</td>
+     <td>${fmt(r.late||0)}</td>
+     <td>${fmt(r.study||0)}</td>
+     <td>${status}</td>
+     <td>${reasons}</td>
+   </tr>`;
+ }).join("")
+}
+function stats(){
+ let present=0,study=0,late=0,waste=0,miss=0;S.forEach((x,i)=>{let r=rec(i);if(r.att)present++;study+=r.study||0;late+=r.late||0;waste+=r.waste||0;if(r.missed)miss++});
+ document.getElementById("attendance").textContent=Math.round(present/S.length*100)+"%";document.getElementById("dayAttend").textContent=today().dayAttend?"PRESENT":"ABSENT";document.getElementById("study").textContent=fmt(study);document.getElementById("late").textContent=fmt(late);document.getElementById("missed").textContent=miss;document.getElementById("waste").textContent=fmt(waste);document.getElementById("streak").textContent=streak()
+}
+function streak(){let s=0,base=new Date();for(let k=0;k<365;k++){let d=new Date(base);d.setDate(d.getDate()-k);let key=dateKey(d),dd=db.days[key];if(dd&&Object.values(dd.slots||{}).some(r=>r.att))s++;else break}return s}
+function quickPlan(){let i=current(),n=nowMin(),html=i>=0?`<b>NOW:</b> SLOT ${S[i][0]} — ${S[i][1]}<br>`:"";html+=next()+"<br>";html+=`Target countdown: <b>${countdownText()}</b>`;document.getElementById("quickPlan").innerHTML=html}
+function period(period){let now=new Date(),dates=[];if(period==="day")dates=[dateKey()];if(period==="week")for(let j=6;j>=0;j--){let d=new Date(now);d.setDate(d.getDate()-j);dates.push(dateKey(d))}if(period==="month"){let y=now.getFullYear(),m=now.getMonth(),days=new Date(y,m+1,0).getDate();for(let j=1;j<=days;j++)dates.push(`${y}-${pad(m+1)}-${pad(j)}`)}let p=0,study=0,late=0,waste=0,miss=0,total=dates.length*S.length;dates.forEach(k=>{let d=db.days[k];if(!d)return;S.forEach((x,i)=>{let r=d.slots?.[i];if(!r)return;if(r.att)p++;study+=r.study||0;late+=r.late||0;waste+=r.waste||0;if(r.missed)miss++})});return{p,study,late,waste,miss,total}}
+function renderAnalytics(){
+ let a=period("day"),w=period("week"),m=period("month");const pct=x=>Math.round(x.p/x.total*100);document.getElementById("dayAttend").textContent=pct(a)+"%";document.getElementById("dayStudy").textContent=fm(a.study);document.getElementById("weekAttend").textContent=pct(w)+"%";document.getElementById("weekStudy").textContent=fm(w.study);document.getElementById("monthAttend").textContent=pct(m)+"%";document.getElementById("monthStudy").textContent=fm(m.study);
+ document.getElementById("analyticsDetail").innerHTML=`<b>DAY:</b> Attendance ${pct(a)}% • Focus ${fmt(a.study)} • Late ${fmt(a.late)} • Untracked ${fmt(a.waste)} • Missed ${a.miss}<br><b>7 DAYS:</b> Attendance ${pct(w)}% • Focus ${fmt(w.study)} • Late ${fmt(w.late)} • Untracked ${fmt(w.waste)} • Missed ${w.miss}<br><b>MONTH:</b> Attendance ${pct(m)}% • Focus ${fmt(m.study)} • Late ${fmt(m.late)} • Untracked ${fmt(m.waste)} • Missed ${m.miss}`;renderTestAnalytics()
+}
+function saveTopic(){
+ let i=current(),value=document.getElementById("topicInput").value.trim();
+ if(i===1){db.topic=value||"Biology topic not set";rec(i).topic=db.topic;log(`Biology topic updated: ${db.topic}`)}
+ else if(i>=0){rec(i).topic=value;log(`${S[i][1]} topic updated: ${value||"cleared"}`)}
+ else {db.topic=value||"Full Test Syllabus";log(`Default Biology topic updated: ${db.topic}`)}
+ save();draw()
+}
+function saveQuestions(){
+ let nums=id=>Math.max(0,Number(document.getElementById(id).value)||0);today().questions={physics:{a:nums("qp"),c:nums("qc"),w:nums("qw")},chemistry:{a:nums("cp"),c:nums("cc"),w:nums("cw")},biology:{a:nums("bp"),c:nums("bc"),w:nums("bw")}};save();renderQuestionStats();log("Today's question tracker saved.")
+}
+function renderQuestionStats(){let q=today().questions;if(!q){document.getElementById("questionStats").innerHTML="No question data saved today.";return}let a=q.physics.a+q.chemistry.a+q.biology.a,c=q.physics.c+q.chemistry.c+q.biology.c,acc=a?Math.round(c/a*100):0;document.getElementById("questionStats").innerHTML=`<span class="pill">Attempted: ${a}</span><span class="pill">Correct: ${c}</span><span class="pill">Accuracy: ${acc}%</span><span class="pill">Wrong: ${q.physics.w+q.chemistry.w+q.biology.w}</span>`}
+function addRevision(){let topic=document.getElementById("revTopic").value.trim();if(!topic){alert("Chapter / Topic likhiye.");return}db.revisions.unshift({date:dateKey(),topic,round:document.getElementById("revRound").value,note:document.getElementById("revNote").value.trim()});save();document.getElementById("revTopic").value="";document.getElementById("revNote").value="";renderRevisions();log(`Revision added: ${topic}`)}
+function renderRevisions(){document.getElementById("revisionList").innerHTML=db.revisions.slice(0,100).map((r,i)=>`<div class="item"><b>${r.topic}</b> <span class="pill">${r.round}</span><div class="small">${r.date} • ${r.note||"No weak point note"}</div><button class="alt" onclick="deleteRevision(${i})">Delete</button></div>`).join("")||"No revisions added yet."}
+function deleteRevision(i){db.revisions.splice(i,1);save();renderRevisions()}
+function addTest(){let name=document.getElementById("testName").value.trim();if(!name){alert("Test name likhiye.");return}db.tests.unshift({date:dateKey(),name,total:Number(document.getElementById("testTotal").value)||720,score:Number(document.getElementById("testScore").value)||0,p:Number(document.getElementById("testP").value)||0,c:Number(document.getElementById("testC").value)||0,b:Number(document.getElementById("testB").value)||0});save();renderTests();log(`Mock test saved: ${name}`)}
+function renderTests(){document.getElementById("testList").innerHTML=db.tests.map((t,i)=>`<div class="item"><b>${t.name}</b> — ${t.score}/${t.total}<span class="pill">${Math.round(t.score/t.total*100)||0}%</span><div class="small">${t.date} • Physics ${t.p} • Chemistry ${t.c} • Biology ${t.b}</div><button class="alt" onclick="deleteTest(${i})">Delete</button></div>`).join("")||"No tests saved yet."}
+function deleteTest(i){db.tests.splice(i,1);save();renderTests()}
+function renderTestAnalytics(){let last=db.tests.slice(0,5);document.getElementById("testAnalytics").innerHTML=last.map(t=>`<span class="pill">${t.name}: ${t.score}/${t.total} (${Math.round(t.score/t.total*100)||0}%)</span>`).join(" ")||"No mock tests yet."}
+function renderLog(){document.getElementById("log").innerHTML=db.logs.map(x=>`<div>${x}</div>`).join("")||"No events."}
+function testSound(){try{let A=window.AudioContext||window.webkitAudioContext,a=new A,o=a.createOscillator(),g=a.createGain();o.frequency.value=700;g.gain.value=.08;o.connect(g);g.connect(a.destination);o.start();setTimeout(()=>{o.stop();a.close()},160)}catch(e){}}
+function alarm(){testSound();setTimeout(testSound,220);setTimeout(testSound,440)}
+function notifyMe(){if(!("Notification"in window)){alert("Chrome Notification API is not available.");return}Notification.requestPermission().then(p=>alert(p==="granted"?"🔔 Reminder enabled. Keep this page open for reminders.":"Notification permission was not granted."))}
+function checkReminder(){let i=current();if(i<0)return;let rem=mins(S[i][2])-nowMin(),key=dateKey()+"-"+i;if(rem>0&&rem<=Number(db.reminder||2)&&lastReminderKey!==key){lastReminderKey=key;if("Notification"in window&&Notification.permission==="granted")new Notification(CFG.title+" Mentor", {body:`SLOT ${S[i][0]} — ${S[i][1]} starts in ${Math.ceil(rem)} minute(s).`});testSound()}}
+function countdownText(){let t=new Date(db.target+"T00:00:00"),now=new Date(),days=Math.ceil((t-now)/86400000);return days>0?`${days} day(s) remaining`:days===0?"Target date is today":"Target date passed"}
+function exportData(){let blob=new Blob([JSON.stringify(db,null,2)],{type:"application/json"}),a=document.createElement("a");a.href=URL.createObjectURL(blob);a.download=`${CFG.id.replace(/\s+/g,"_")}_Mentor_Backup_${dateKey()}.json`;a.click();URL.revokeObjectURL(a.href)}
+function importData(){let i=document.createElement("input");i.type="file";i.accept=".json";i.onchange=()=>{let f=i.files[0];if(!f)return;let r=new FileReader();r.onload=()=>{try{let x=JSON.parse(r.result);if(!x.days)throw Error();db=x;save();location.reload()}catch(e){alert("Invalid backup file.")}};r.readAsText(f)};i.click()}
+function resetToday(){if(!confirm("Aaj ka slot/question data reset karein?"))return;delete db.days[dateKey()];save();location.reload()}
+function clearAllData(){if(!confirm("ALL local data delete ho jayega. Continue?"))return;localStorage.removeItem(KEY);location.reload()}
+
+const BIO_TOPICS=[
+"Living World + Taxonomy","Biological Classification","Plant Kingdom","Animal Kingdom","Morphology of Flowering Plants","Anatomy of Flowering Plants","Structural Organisation in Animals","Cell: Unit of Life","Biomolecules","Cell Cycle and Cell Division","Transport in Plants","Mineral Nutrition","Photosynthesis in Higher Plants","Respiration in Plants","Plant Growth and Development","Digestion and Absorption","Breathing and Exchange of Gases","Body Fluids and Circulation","Excretory Products and their Elimination","Locomotion and Movement","Neural Control and Coordination","Chemical Coordination and Integration","Reproduction in Organisms / Flowering Plants","Human Reproduction","Reproductive Health","Principles of Inheritance and Variation","Molecular Basis of Inheritance","Evolution","Human Health and Disease","Microbes in Human Welfare","Biotechnology: Principles and Processes","Biotechnology and its Applications","Organisms and Populations","Ecosystem","Biodiversity and Conservation","Environmental Issues","NCERT diagrams + line-by-line revision","Botany mixed PYQs","Zoology mixed PYQs"
+];
+const CHEM_TOPICS=[
+"Some Basic Concepts of Chemistry","Structure of Atom","Classification of Elements and Periodicity","Chemical Bonding and Molecular Structure","States of Matter / gas laws practice","Thermodynamics","Equilibrium: chemical","Equilibrium: ionic","Redox Reactions","Solutions","Electrochemistry","Chemical Kinetics","d- and f-Block Elements","Coordination Compounds","p-Block Elements: selected syllabus topics","Purification and Characterisation of Organic Compounds","Some Basic Principles of Organic Chemistry","Hydrocarbons","Haloalkanes and Haloarenes","Alcohols, Phenols and Ethers","Aldehydes, Ketones and Carboxylic Acids","Amines","Biomolecules","Practical Chemistry / qualitative analysis","Mole concept + stoichiometry practice","Chemical bonding NCERT revision","Organic reaction mechanisms revision","Inorganic NCERT line-by-line revision","Physical chemistry mixed numericals","Organic chemistry mixed PYQs","Inorganic chemistry mixed PYQs"
+];
+const PHY_TOPICS=[
+"Basic Maths and Mathematical Tools","Vectors","Units and Measurements","Motion in a Straight Line","Motion in a Plane","Laws of Motion","Work, Energy and Power","System of Particles and Rotational Motion","Gravitation","Mechanical Properties of Solids and Fluids","Thermal Properties of Matter","Thermodynamics","Kinetic Theory","Oscillations","Waves","Electric Charges and Fields","Electrostatic Potential and Capacitance","Current Electricity","Moving Charges and Magnetism","Magnetism and Matter","Electromagnetic Induction","Alternating Current","Electromagnetic Waves","Ray Optics","Wave Optics","Dual Nature of Radiation and Matter","Atoms","Nuclei","Semiconductor Electronics","Experimental Skills / units / graphs","Mechanics mixed numericals","Electricity and Magnetism mixed PYQs","Modern Physics mixed PYQs"
+];
+function roadmapKey(date){return date}
+function datePlus(date,n){let d=new Date(date+"T12:00:00");d.setDate(d.getDate()+n);return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`}
+function generatedPlan(date,index){
+ let phase=index<112?"Syllabus build":index<154?"First revision + PYQs":"Full revision + mock tests";
+ let b=BIO_TOPICS[Math.floor(index/2)%BIO_TOPICS.length],c=CHEM_TOPICS[Math.floor(index/2)%CHEM_TOPICS.length],p=PHY_TOPICS[Math.floor(index/2)%PHY_TOPICS.length];
+ let practice=(index%7===6)?"Weekly test + error notebook + revise weak topics":(index%7===5)?"PYQs + NCERT line revision":"Topic-wise MCQs + error notebook";
+ if(index>=112){if(index%7===6)practice="Full / part syllabus test + detailed analysis";else practice="Revision cycle + PYQs + weak-topic repair"}
+ return {bio:(index%7===6?"Biology weekly test + weak chapter revision":b),chem:(index%7===6?"Chemistry weekly test + error analysis":c),phy:(index%7===6?"Physics weekly test + formula revision":p),practice,phase,status:"planned"}
+}
+function getRoadPlan(date){
+ if(!db.roadmap[date]){
+  let start=db.roadmapStart||CFG.start;
+  let ix=Math.round((new Date(date+"T12:00:00")-new Date(start+"T12:00:00"))/86400000);
+  db.roadmap[date]=ix>=0&&ix<188?generatedPlan(date,ix):{bio:"",chem:"",phy:"",practice:"",phase:"Custom",status:"planned"};
+ }
+ return db.roadmap[date]
+}
+function saveRoadDay(){
+ let d=document.getElementById("roadmapDate").value||dateKey(),x=getRoadPlan(d);
+ x.bio=document.getElementById("roadBio").value.trim();x.chem=document.getElementById("roadChem").value.trim();x.phy=document.getElementById("roadPhy").value.trim();x.practice=document.getElementById("roadPractice").value.trim();x.status="planned";db.roadmap[d]=x;save();renderRoadmap();alert("Daily roadmap saved locally for "+d)
+}
+function loadRoadDay(){
+ let d=document.getElementById("roadmapDate").value||dateKey(),x=getRoadPlan(d);
+ document.getElementById("roadBio").value=x.bio||"";document.getElementById("roadChem").value=x.chem||"";document.getElementById("roadPhy").value=x.phy||"";document.getElementById("roadPractice").value=x.practice||"";renderRoadmap()
+}
+function saveWeekTarget(){
+ let d=document.getElementById("weekDate").value||dateKey();db.weekTargets[d]=document.getElementById("weekTarget").value.trim();save();renderWeekTarget();alert("7-day target saved locally from "+d)
+}
+function renderWeekTarget(){
+ let d=document.getElementById("weekDate").value||dateKey(),v=db.weekTargets[d]||"";
+ document.getElementById("weekTarget").value=v;
+ document.getElementById("weekTargetStatus").innerHTML=v?`<b>LOCKED:</b> ${d} to ${datePlus(d,6)}<br>${v.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/\n/g,"<br>")}`:`No 7-day target saved for ${d}. Enter the week goal above.`
+}
+function renderRoadmap(){
+ let start=document.getElementById("roadmapStart").value||db.roadmapStart||CFG.start;db.roadmapStart=start;
+ let selected=document.getElementById("roadmapDate").value||dateKey();document.getElementById("roadmapDate").value=selected;
+ let index=Math.round((new Date(selected+"T12:00:00")-new Date(start+"T12:00:00"))/86400000);
+ let rows="";
+ for(let i=0;i<188;i++){
+  let d=datePlus(start,i),x=getRoadPlan(d),actual=db.days[d],slots=actual?.slots||{},doneCount=Object.values(slots).filter(r=>r.done).length;
+  let status=actual?(doneCount?"Progress logged":"Day opened"):"Not logged";
+  rows+=`<tr class="${d===selected?'now':''}"><td><b>${d}</b><div class="small">Day ${i+1} / 188</div><span class="pill">${x.phase||""}</span></td><td>${safeHtml(x.bio||"")}</td><td>${safeHtml(x.chem||"")}</td><td>${safeHtml(x.phy||"")}</td><td>${safeHtml(x.practice||"")}</td><td>${status}</td><td><button class="alt" onclick="openRoadDate('${d}')">Open</button></td></tr>`
+ }
+ document.getElementById("roadmapRows").innerHTML=rows;
+ document.getElementById("roadmapSummary").innerHTML=`<b>188-day roadmap:</b> ${start} → ${datePlus(start,187)}<br>Selected: ${selected} • ${index>=0&&index<188?"Day "+(index+1)+" of 188":"Outside roadmap"}<br><span class="small">Outline uses a rotating chapter map and weekly test/revision days. Confirm every topic against the current official NEET 2027 syllabus and edit to match your coaching/test schedule. It does not assume a chapter is completed unless you record it.</span>`;
+ renderWeekTarget()
+}
+function openRoadDate(d){document.getElementById("roadmapDate").value=d;loadRoadDay();document.getElementById("roadBio").scrollIntoView({behavior:"smooth",block:"center"})}
+function generateRoadmap(){
+ if(!confirm("Generate / fill the 188-day topic outline from the selected start date? Existing saved daily plans will be kept."))return;
+ let start=document.getElementById("roadmapStart").value||CFG.start;db.roadmapStart=start;
+ for(let i=0;i<188;i++){let d=datePlus(start,i);if(!db.roadmap[d])db.roadmap[d]=generatedPlan(d,i)}
+ save();renderRoadmap();loadRoadDay();renderChapters();alert("188-day outline generated. Edit the daily topic fields to match your syllabus progress.")
+}
+function safeHtml(s){return String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c])).replace(/\n/g,"<br>")}
+document.getElementById("roadmapStart")?.addEventListener("change",()=>{db.roadmapStart=document.getElementById("roadmapStart").value;save();renderRoadmap()});
+document.getElementById("roadmapDate")?.addEventListener("change",loadRoadDay);
+document.getElementById("weekDate")?.addEventListener("change",renderWeekTarget);
+
+
+// Chapter database: chapter titles are organized as study sections for usability.
+// PDF efficiency/reward figures are copied only where legible in the user's uploaded Efforts vs Rewards PDF.
+// A missing PDF rank means "not listed/readable in supplied PDF", NOT low importance.
+const CHAPTERS=CFG.chapters;
+const CHAPTER_STATUSES=["Not started","Lectures in progress","Questions in progress","Revision pending","Completed"];
+db.chapterStatus ||= {};
+function chapterKey(c){return c.section+"::"+c.name}
+function renderChapters(){
+ const section=document.getElementById("chapterSubject")?.value||"All";
+ const statusFilter=document.getElementById("chapterStatusFilter")?.value||"All";
+ const priorityFilter=document.getElementById("chapterPriorityFilter")?.value||"All";
+ const query=(document.getElementById("chapterSearch")?.value||"").toLowerCase().trim();
+ const rows=CHAPTERS.filter(c=>(section==="All"||c.section===section)&&(!query||(c.name+" "+c.section).toLowerCase().includes(query))&&(priorityFilter==="All"||(priorityFilter==="Unranked"?c.priority==="Unranked":c.priority===priorityFilter))&& (statusFilter==="All"||(db.chapterStatus[chapterKey(c)]?.status||"Not started")===statusFilter));
+ document.getElementById("chapterRows").innerHTML=rows.map(c=>{
+  const k=chapterKey(c),r=db.chapterStatus[k]||{},status=r.status||"Not started";
+  const eff=c.ratio==null?"Not listed/readable":c.ratio.toFixed(2)+"×";
+  const reward=c.reward==null?"—":c.reward+" PYQ reward (PDF)";
+  const priority=c.priority==="High"?"High efficiency":c.priority==="Medium"?"Medium efficiency":"Not ranked in PDF";
+  const workflow="Lecture/video → NCERT/notes → chapter MCQs + PYQs → error log → revision";
+  return `<tr><td>${safeHtml(c.section)}</td><td><b>${safeHtml(c.name)}</b><div class="small">${safeHtml(reward)}</div></td><td><span class="pill">${safeHtml(priority)}</span><div class="small">Efficiency ratio: ${eff}</div></td><td class="small">${workflow}</td><td><select aria-label="Status for ${safeHtml(c.name)}" onchange="setChapterStatus('${encodeURIComponent(k)}','status',this.value)">${CHAPTER_STATUSES.map(s=>`<option ${status===s?"selected":""}>${s}</option>`).join("")}</select></td><td><input type="date" value="${safeHtml(r.target||"")}" onchange="setChapterStatus('${encodeURIComponent(k)}','target',this.value)"></td><td><input value="${safeHtml(r.notes||"")}" placeholder="Weak points / score..." onchange="setChapterStatus('${encodeURIComponent(k)}','notes',this.value)"></td></tr>`;
+ }).join("");
+ const completed=CHAPTERS.filter(c=>(db.chapterStatus[chapterKey(c)]?.status||"Not started")==="Completed").length;
+ const high=CHAPTERS.filter(c=>c.priority==="High").length;
+ const pending=CHAPTERS.filter(c=>(db.chapterStatus[chapterKey(c)]?.status||"Not started")==="Not started").length;
+ document.getElementById("chTotal").textContent=CHAPTERS.length;
+ document.getElementById("chDone").textContent=completed;
+ document.getElementById("chProgress").textContent=Math.round(completed/CHAPTERS.length*100)+"%";
+ document.getElementById("chHigh").textContent=high;
+ document.getElementById("chPending").textContent=pending;
+ document.getElementById("chapterFooter").innerHTML=`Showing <b>${rows.length}</b> of ${CHAPTERS.length} chapter records. Completed: <b>${completed}</b> (${Math.round(completed/CHAPTERS.length*100)}%). PDF high-efficiency chapters are a priority hint; all chapters that remain in the official syllabus must still be studied. The supplied PDF's reward values refer to 2008–2024 questions and are not a prediction of 2027 questions.`;
+ save();
+}
+function setChapterStatus(encodedKey,field,value){
+ const k=decodeURIComponent(encodedKey);db.chapterStatus[k] ||= {};
+ db.chapterStatus[k][field]=value;
+ if(field==="status"&&value==="Completed")db.chapterStatus[k].completedOn=dateKey();
+ save();renderChapters();
+}
+function resetChapterStatuses(){
+ if(!confirm("All chapter statuses, target dates and chapter notes will be reset on this device. Continue?"))return;
+ db.chapterStatus={};save();renderChapters();
+}
+function exportChapterCSV(){
+ const quote=v=>'"'+String(v??"").replace(/"/g,'""')+'"';
+ const rows=[["Section","Chapter","PDF efficiency ratio","PDF historical reward","PDF priority","Status","Target date","Notes"]];
+ CHAPTERS.forEach(c=>{const r=db.chapterStatus[chapterKey(c)]||{};rows.push([c.section,c.name,c.ratio??"",c.reward??"",c.priority,r.status||"Not started",r.target||"",r.notes||""])});
+ const csv=rows.map(row=>row.map(quote).join(",")).join("\r\n");
+ const blob=new Blob(["\ufeff"+csv],{type:"text/csv;charset=utf-8;"});
+ const url=URL.createObjectURL(blob),a=document.createElement("a");a.href=url;a.download="NEET_2027_Chapter_Matrix.csv";a.click();URL.revokeObjectURL(url);
+}
+
+function updateSettings(){db.target=document.getElementById("targetDate").value||CFG.target;db.reminder=Math.max(0,Math.min(60,Number(document.getElementById("reminderMin").value)||2));save()}
+document.getElementById("topicInput").value=db.topic||"Full Test Syllabus";document.getElementById("targetDate").value=db.target||CFG.target;document.getElementById("reminderMin").value=db.reminder??2;
+document.getElementById("targetDate").addEventListener("change",updateSettings);document.getElementById("reminderMin").addEventListener("change",updateSettings);
+if("serviceWorker" in navigator && (location.protocol==="https:"||location.hostname==="localhost"||location.hostname==="127.0.0.1"))navigator.serviceWorker.register("./sw.js").catch(()=>{});
+setInterval(draw,1000);setInterval(()=>{reconcile()},15000);
+renderLog();renderQuestionStats();renderRevisions();renderTests();renderAnalytics();renderHistory();draw();
+if(document.getElementById("roadmapDate"))document.getElementById("roadmapDate").value=dateKey();
+if(document.getElementById("weekDate"))document.getElementById("weekDate").value=dateKey();
+renderRoadmap();loadRoadDay();renderChapters();renderSubjectFocus();
+
+/* ===== MULTI-EXAM OVERRIDES (same engine, exam-specific data) ===== */
+function $(id){return document.getElementById(id)}
+function PRISL(){return["Not set","High","Medium","Low"]}
+function roadD(){return Number(db.roadDays)||CFG.days}
+function clearAuto(){for(const k in db.roadmap)if(db.roadmap[k]&&db.roadmap[k].auto)delete db.roadmap[k];save()}
+function initUI(){
+ const sf=safeHtml;
+ $("qForm").innerHTML=CFG.subjects.map((s,i)=>`<label>${sf(s)} Attempted<input id="qa${i}" type="number" min="0" value="0"></label><label>${sf(s)} Correct<input id="qc${i}" type="number" min="0" value="0"></label><label>${sf(s)} Wrong<input id="qw${i}" type="number" min="0" value="0"></label>`).join("");
+ $("testForm").innerHTML=`<label>Test Name<input id="testName" placeholder="${sf(CFG.short)} Full Test 01"></label><label>Total Marks<input id="testTotal" type="number" value="${CFG.total}"></label><label>Score<input id="testScore" type="number" value="0"></label>`+CFG.subjects.map((s,i)=>`<label>${sf(s)}<input id="ts${i}" type="number" value="0"></label>`).join("");
+ $("roadForm").innerHTML=CFG.subjects.map((s,i)=>`<label>${sf(s)} target<textarea id="rd${i}" placeholder="Chapter / topic / practice"></textarea></label>`).join("");
+ $("roadHead").innerHTML="<th>Date / Day</th>"+CFG.subjects.map(s=>`<th>${sf(s)}</th>`).join("")+"<th>Practice / Test</th><th>Status</th><th>Open</th>";
+ $("chapterSubject").innerHTML='<option value="All">All Subjects</option>'+CFG.subjects.map(s=>`<option>${sf(s)}</option>`).join("");
+ $("chapterPriorityFilter").innerHTML='<option value="All">All priorities</option>'+PRISL().map(p=>`<option>${p}</option>`).join("");
+ $("revTopic").placeholder="e.g. "+(CFG.chapters[0]?CFG.chapters[0].name:"Chapter");
+ document.title=CFG.title+" — AI Mentor";
+ const w=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT,{acceptNode:n=>/SCRIPT|STYLE/.test(n.parentNode.nodeName)?NodeFilter.FILTER_REJECT:NodeFilter.FILTER_ACCEPT}),ns=[];
+ while(w.nextNode())ns.push(w.currentNode);
+ ns.forEach(n=>{n.nodeValue=n.nodeValue.replace(/NEET 2027/g,CFG.title).replace(/NEET/g,CFG.short).replace(/188/g,roadD()).replace("11 fixed slots • 05:30–23:45",`${S.length} fixed slots • ${S[0][2]}–${S[S.length-1][3]}`)});
+ $("chapters").querySelector(".advice").innerHTML=`Chapters follow the commonly used <b>${sf(CFG.title)}</b> syllabus. Please verify against the latest official notification. Set your own priority (High / Medium / Low) for every chapter and track status, target date and notes.`;
+ $("roadmap").querySelector("p.small").textContent="Plan is auto-generated from your chapters (syllabus build → revision → mock phase) and stored only in this browser. Set the start date and exam date; every day stays editable.";
+ $("settings").querySelector(".advice").innerHTML='<b>Exam Countdown:</b> <span id="countdown"></span><br><span class="small">Set your exam date above.</span>';
+ $("countdown").textContent=countdownText();
+ $("targetDate").closest(".formgrid2").insertAdjacentHTML("beforeend",`<label>Roadmap length (days)<input id="roadDays" type="number" min="30" max="730" value="${roadD()}"></label>`+(CFG.branches?`<label>GATE Branch<select id="branchSel">${CFG.branches.map(b=>`<option ${b===CFG.branch?"selected":""}>${b}</option>`).join("")}</select></label>`:""));
+ $("roadDays").addEventListener("change",()=>{updateSettings();clearAuto();renderRoadmap();loadRoadDay()});
+ if($("branchSel"))$("branchSel").addEventListener("change",()=>{db.branch=$("branchSel").value;delete db.routine;db.roadmap={};save();location.reload()});
+ $("roadmapStart").addEventListener("change",()=>{clearAuto();renderRoadmap();loadRoadDay()});
+ $("settings").querySelector("section").insertAdjacentHTML("beforeend",'<div id="routineEd" style="margin-top:16px"></div>');
+ renderRoutineEditor();
+}
+function renderRoutineEditor(){
+ const o=CFG.subjects.map(s=>`<option value="${safeHtml(s)}">${safeHtml(s)}</option>`).join("");
+ $("routineEd").innerHTML=`<h3>🕒 Daily Routine Editor</h3><p class="small">Slot name, time, description aur subject apne hisaab se badlo. Subject-wise focus report isi se banta hai.</p><div style="overflow:auto"><table><thead><tr><th>Slot</th><th>Name</th><th>Start</th><th>End</th><th>Description</th><th>Subject</th></tr></thead><tbody>`+S.map((x,i)=>`<tr><td>${x[0]}</td><td><input id="rn${i}" value="${safeHtml(x[1])}"></td><td><input id="rs${i}" type="time" value="${x[2]}"></td><td><input id="re${i}" type="time" value="${x[3]}"></td><td><input id="rx${i}" value="${safeHtml(x[4])}"></td><td><select id="rb${i}"><option value="">—</option>${o}</select></td></tr>`).join("")+`</tbody></table></div><button class="green" onclick="saveRoutine()">💾 SAVE ROUTINE</button><button class="alt" onclick="resetRoutine()">↩ RESET DEFAULT ROUTINE</button>`;
+ S.forEach((x,i)=>{$("rb"+i).value=x[5]||""});
+}
+function saveRoutine(){
+ const a=S.map((x,i)=>[x[0],$("rn"+i).value.trim()||x[1],$("rs"+i).value,$("re"+i).value,$("rx"+i).value.trim(),$("rb"+i).value||null]);
+ for(const x of a){if(!x[2]||!x[3]||mins(x[3])<=mins(x[2])){alert("Slot "+x[0]+": end time start se baad ka hona chahiye.");return}}
+ db.routine=a;save();location.reload()
+}
+function resetRoutine(){if(!confirm("Default routine wapas lagayein?"))return;delete db.routine;save();location.reload()}
+function saveTopic(){
+ let i=current(),v=$("topicInput").value.trim();
+ if(i<0){alert("Abhi koi active slot nahi hai.");return}
+ rec(i).topic=v;db.slotTopics[i]=v;log(`${S[i][1]} topic updated: ${v||"cleared"}`);save();draw()
+}
+function saveQuestions(){
+ let n=id=>Math.max(0,Number($(id).value)||0),q={};
+ CFG.subjects.forEach((s,i)=>q[s]={a:n("qa"+i),c:n("qc"+i),w:n("qw"+i)});
+ today().questions=q;save();renderQuestionStats();log("Today's question tracker saved.")
+}
+function renderQuestionStats(){
+ let q=today().questions;if(!q){$("questionStats").innerHTML="No question data saved today.";return}
+ let a=0,c=0,w=0;Object.values(q).forEach(z=>{a+=z.a||0;c+=z.c||0;w+=z.w||0});
+ $("questionStats").innerHTML=`<span class="pill">Attempted: ${a}</span><span class="pill">Correct: ${c}</span><span class="pill">Accuracy: ${a?Math.round(c/a*100):0}%</span><span class="pill">Wrong: ${w}</span><div style="margin-top:8px">`+Object.keys(q).map(s=>`<span class="pill">${safeHtml(s)}: ${q[s].c||0}/${q[s].a||0}</span>`).join("")+`</div>`
+}
+function addTest(){
+ let name=$("testName").value.trim();if(!name){alert("Test name likhiye.");return}
+ let subs={};CFG.subjects.forEach((s,i)=>subs[s]=Number($("ts"+i).value)||0);
+ db.tests.unshift({date:dateKey(),name,total:Number($("testTotal").value)||CFG.total,score:Number($("testScore").value)||0,subs});
+ save();renderTests();log(`Mock test saved: ${name}`)
+}
+function renderTests(){
+ $("testList").innerHTML=db.tests.map((t,i)=>`<div class="item"><b>${safeHtml(t.name)}</b> — ${t.score}/${t.total}<span class="pill">${Math.round(t.score/t.total*100)||0}%</span><div class="small">${t.date} • ${Object.keys(t.subs||{}).map(s=>safeHtml(s)+" "+t.subs[s]).join(" • ")}</div><button class="alt" onclick="deleteTest(${i})">Delete</button></div>`).join("")||"No tests saved yet."
+}
+function renderSubjectFocus(){
+ const sum=keys=>{let o={};CFG.subjects.forEach(s=>o[s]=0);keys.forEach(k=>{let d=db.days[k];if(!d)return;S.forEach((x,i)=>{let r=d.slots?.[i];if(r&&x[5]&&o[x[5]]!=null)o[x[5]]+=r.study||0})});return o};
+ const now=new Date(),wk=[],mo=[];
+ for(let j=6;j>=0;j--){let d=new Date(now);d.setDate(d.getDate()-j);wk.push(dateKey(d))}
+ for(let j=1;j<=new Date(now.getFullYear(),now.getMonth()+1,0).getDate();j++)mo.push(`${now.getFullYear()}-${pad(now.getMonth()+1)}-${pad(j)}`);
+ const a=sum([dateKey()]),w=sum(wk),m=sum(mo);
+ $("subjectFocus").innerHTML=`<table><thead><tr><th>Subject</th><th>Today</th><th>7 Days</th><th>Month</th></tr></thead><tbody>`+CFG.subjects.map(s=>`<tr><td><b>${safeHtml(s)}</b></td><td>${fm(a[s])}</td><td>${fm(w[s])}</td><td>${fm(m[s])}</td></tr>`).join("")+`</tbody></table>`
+}
+function generatedPlan(date,ix){
+ const D=roadD(),b=Math.round(D*.6),r=Math.round(D*.82),wk=ix%7===6,x={phase:ix<b?"Syllabus build":ix<r?"First revision + PYQs":"Full revision + mock tests",status:"planned",auto:true,subs:{}};
+ CFG.subjects.forEach(s=>{
+  const L=CFG.chapters.filter(c=>c.section===s).map(c=>c.name),n=L.length||1;let t;
+  if(wk)t=s+" weekly test + error analysis";
+  else if(ix<b)t=L[Math.min(n-1,Math.floor(ix*n/b))]||"";
+  else t=(ix<r?"Revise: ":"Full revision: ")+(L[Math.floor((ix-b)*n/Math.max(1,D-b))%n]||"");
+  x.subs[s]=t});
+ x.practice=ix>=b?(wk?"Full / part syllabus test + detailed analysis":"Revision cycle + PYQs + weak-topic repair"):wk?"Weekly test + error notebook + revise weak topics":ix%7===5?"PYQs + notes line revision":"Topic-wise practice + error notebook";
+ return x
+}
+function getRoadPlan(date){
+ if(!db.roadmap[date]){
+  let ix=Math.round((new Date(date+"T12:00:00")-new Date((db.roadmapStart||CFG.start)+"T12:00:00"))/86400000);
+  db.roadmap[date]=ix>=0&&ix<roadD()?generatedPlan(date,ix):{subs:{},practice:"",phase:"Custom",status:"planned",auto:false}
+ }
+ return db.roadmap[date]
+}
+function saveRoadDay(){
+ let d=$("roadmapDate").value||dateKey(),x=getRoadPlan(d);x.subs={};
+ CFG.subjects.forEach((s,i)=>x.subs[s]=$("rd"+i).value.trim());
+ x.practice=$("roadPractice").value.trim();x.status="planned";x.auto=false;db.roadmap[d]=x;save();renderRoadmap();alert("Daily roadmap saved locally for "+d)
+}
+function loadRoadDay(){
+ let d=$("roadmapDate").value||dateKey(),x=getRoadPlan(d);
+ CFG.subjects.forEach((s,i)=>$("rd"+i).value=(x.subs||{})[s]||"");
+ $("roadPractice").value=x.practice||"";renderRoadmap()
+}
+function renderRoadmap(){
+ const D=roadD(),start=$("roadmapStart").value||db.roadmapStart||CFG.start;db.roadmapStart=start;
+ let selected=$("roadmapDate").value||dateKey();$("roadmapDate").value=selected;
+ let index=Math.round((new Date(selected+"T12:00:00")-new Date(start+"T12:00:00"))/86400000),rows="";
+ for(let i=0;i<D;i++){
+  let d=datePlus(start,i),x=getRoadPlan(d),actual=db.days[d],doneCount=Object.values(actual?.slots||{}).filter(r=>r.done).length;
+  rows+=`<tr class="${d===selected?'now':''}"><td><b>${d}</b><div class="small">Day ${i+1} / ${D}</div><span class="pill">${safeHtml(x.phase||"")}</span></td>`+CFG.subjects.map(s=>`<td>${safeHtml((x.subs||{})[s]||"")}</td>`).join("")+`<td>${safeHtml(x.practice||"")}</td><td>${actual?(doneCount?"Progress logged":"Day opened"):"Not logged"}</td><td><button class="alt" onclick="openRoadDate('${d}')">Open</button></td></tr>`
+ }
+ $("roadmapRows").innerHTML=rows;
+ $("roadmapSummary").innerHTML=`<b>${D}-day roadmap:</b> ${start} → ${datePlus(start,D-1)}<br>Selected: ${selected} • ${index>=0&&index<D?"Day "+(index+1)+" of "+D:"Outside roadmap"}<br><span class="small">Outline chapters ko 3 phase me baantta hai: syllabus build → revision + PYQs → full revision + mocks, har 7th din weekly test. Apne syllabus/coaching ke hisaab se kisi bhi din ko edit karo.</span>`;
+ renderWeekTarget()
+}
+function openRoadDate(d){$("roadmapDate").value=d;loadRoadDay();$("rd0").scrollIntoView({behavior:"smooth",block:"center"})}
+function generateRoadmap(){
+ const D=roadD();if(!confirm(`Generate / fill the ${D}-day outline from the selected start date? Existing saved daily plans will be kept.`))return;
+ let start=$("roadmapStart").value||CFG.start;db.roadmapStart=start;
+ for(let i=0;i<D;i++){let d=datePlus(start,i);if(!db.roadmap[d])db.roadmap[d]=generatedPlan(d,i)}
+ save();renderRoadmap();loadRoadDay();renderChapters();alert(`${D}-day outline generated. Edit the daily fields to match your progress.`)
+}
+function renderChapters(){
+ const sub=$("chapterSubject").value||"All",st=$("chapterStatusFilter").value||"All",pr=$("chapterPriorityFilter").value||"All",q=($("chapterSearch").value||"").toLowerCase().trim();
+ const gs=c=>db.chapterStatus[chapterKey(c)]||{};
+ const rows=CHAPTERS.filter(c=>(sub==="All"||c.section===sub)&&(!q||(c.name+" "+c.part+" "+c.section).toLowerCase().includes(q))&&(pr==="All"||(gs(c).priority||"Not set")===pr)&&(st==="All"||(gs(c).status||"Not started")===st));
+ $("chapterRows").innerHTML=rows.map(c=>{
+  const k=chapterKey(c),r=gs(c),status=r.status||"Not started",p=r.priority||"Not set",ek=encodeURIComponent(k);
+  return `<tr><td>${safeHtml(c.section)}</td><td><b>${safeHtml(c.name)}</b><div class="small">${safeHtml(c.part)}</div></td><td><select onchange="setChapterStatus('${ek}','priority',this.value)">${PRISL().map(s=>`<option ${p===s?"selected":""}>${s}</option>`).join("")}</select></td><td class="small">${safeHtml(CFG.workflow)}</td><td><select onchange="setChapterStatus('${ek}','status',this.value)">${CHAPTER_STATUSES.map(s=>`<option ${status===s?"selected":""}>${s}</option>`).join("")}</select></td><td><input type="date" value="${safeHtml(r.target||"")}" onchange="setChapterStatus('${ek}','target',this.value)"></td><td><input value="${safeHtml(r.notes||"")}" placeholder="Weak points / score..." onchange="setChapterStatus('${ek}','notes',this.value)"></td></tr>`}).join("");
+ const T=CHAPTERS.length||1,done=CHAPTERS.filter(c=>(gs(c).status||"Not started")==="Completed").length,hi=CHAPTERS.filter(c=>gs(c).priority==="High").length,pend=CHAPTERS.filter(c=>(gs(c).status||"Not started")==="Not started").length;
+ $("chTotal").textContent=CHAPTERS.length;$("chDone").textContent=done;$("chProgress").textContent=Math.round(done/T*100)+"%";$("chHigh").textContent=hi;$("chPending").textContent=pend;$("chSubs").textContent=CFG.subjects.length;
+ $("chapterFooter").innerHTML=`Showing <b>${rows.length}</b> of ${CHAPTERS.length} chapters. Completed: <b>${done}</b> (${Math.round(done/T*100)}%). Priority aapki apni marking hai; syllabus ke saare chapters padhne zaroori hain.`;
+ save()
+}
+function exportChapterCSV(){
+ const q=v=>'"'+String(v??"").replace(/"/g,'""')+'"',rows=[["Subject","Part","Chapter","Your priority","Status","Target date","Notes"]];
+ CHAPTERS.forEach(c=>{const r=db.chapterStatus[chapterKey(c)]||{};rows.push([c.section,c.part,c.name,r.priority||"Not set",r.status||"Not started",r.target||"",r.notes||""])});
+ const blob=new Blob(["\ufeff"+rows.map(r=>r.map(q).join(",")).join("\r\n")],{type:"text/csv;charset=utf-8;"}),url=URL.createObjectURL(blob),a=document.createElement("a");
+ a.href=url;a.download=CFG.id.replace(/\s+/g,"_")+"_Chapter_Matrix.csv";a.click();URL.revokeObjectURL(url)
+}
+function countdownText(){
+ if(!db.target)return"Exam date set nahi hai (Settings me daalo)";
+ let days=Math.ceil((new Date(db.target+"T00:00:00")-new Date())/86400000);return days>0?`${days} day(s) remaining`:days===0?"Target date is today":"Target date passed"
+}
+function updateSettings(){
+ db.target=$("targetDate").value||"";db.reminder=Math.max(0,Math.min(60,Number($("reminderMin").value)||2));
+ if($("roadDays"))db.roadDays=Math.max(30,Math.min(730,Number($("roadDays").value)||CFG.days));
+ save();if($("countdown"))$("countdown").textContent=countdownText()
+}
+</script>
+</body>
+</html>
